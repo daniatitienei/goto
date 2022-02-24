@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Goto</string>
+    <string name="app_name" translatable="false">GoTo</string>
     <string name="welcome">Welcome!</string>
     <string name="email">Email</string>
     <string name="name">Name</string>

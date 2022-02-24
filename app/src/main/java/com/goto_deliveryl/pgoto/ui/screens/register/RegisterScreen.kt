@@ -188,12 +188,8 @@ fun RegisterScreen() {
                 ) {
                     TextButton(onClick = { /*TODO*/ }) {
                         Text(
-                            text = buildAnnotatedString {
-                                append(stringResource(id = R.string.already_have_an_account) + '\n')
-                                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                                    append(stringResource(id = R.string.login))
-                                }
-                            },
+                            text = stringResource(id = R.string.already_have_an_account) + '\n'
+                                    + stringResource(id = R.string.login),
                             textAlign = TextAlign.Center
                         )
                     }
