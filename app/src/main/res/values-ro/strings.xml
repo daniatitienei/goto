@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="welcome">Bine ai venit!</string>
+    <string name="email">Email</string>
+    <string name="name">Nume</string>
+    <string name="password">Parola</string>
+    <string name="confirm_password">Reintroduceți parola</string>
+    <string name="sign_up">Înregistrare</string>
+    <string name="google_authentication">Autentificați-vă cu Google</string>
+    <string name="or_continue_with">Sau continuă cu</string>
+    <string name="login">Conectează-te</string>
+    <string name="do_not_have_an_account">Nu ai cont?</string>
+    <string name="already_have_an_account">Deja ai cont?</string>
 </resources>

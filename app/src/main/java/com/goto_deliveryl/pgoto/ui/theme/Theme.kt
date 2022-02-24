@@ -12,33 +12,30 @@ fun GotoTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
     MaterialTheme(
         content = content,
         typography = GotoTypography,
-        colorScheme = if (isDarkTheme) darkColorScheme else lightColorScheme
+        colorScheme = if (isDarkTheme) darkColorScheme else lightColorScheme,
     )
 }
 
 private val lightColorScheme = lightColorScheme(
     primary = Lime900,
-    onPrimary = Color.White,
-    primaryContainer = Lime900,
-    onPrimaryContainer = Color.White,
-    inversePrimary = DarkGreen900,
+    onPrimary = Color.Black,
+    primaryContainer = LightGrey900,
+    onPrimaryContainer = Color.Black,
     secondary = Lime700,
     onSecondary = Color.White,
-    secondaryContainer = Lime700,
-    onSecondaryContainer = Color.White,
-    onBackground = Lime900
+    onSurface = LightGrey900,
+    surface = Color.White,
 )
 
 private val darkColorScheme = darkColorScheme(
-    primary = DarkGreen900,
-    onPrimary = Color.White,
-    primaryContainer = DarkGreen900,
+    primary = Lime900,
+    onPrimary = DarkGreen900,
+    primaryContainer = DarkGreen700,
     onPrimaryContainer = Color.White,
-    inversePrimary = DarkGreen900,
-    secondary = DarkGreen700,
-    onSecondary = Color.White,
-    secondaryContainer = DarkGreen700,
-    onSecondaryContainer = Color.White,
+    secondary = Lime700,
+    onSecondary = DarkGreen700,
     background = DarkGreen900,
     onBackground = Lime900,
+    onSurface = DarkGreen600,
+    surface = DarkGreen900
 )
