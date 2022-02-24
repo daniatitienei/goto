@@ -222,6 +222,7 @@ private fun RegistrationTextField(
                 unfocusedIndicatorColor = Color.Transparent,
                 cursorColor = Lime900,
                 backgroundColor = MaterialTheme.colorScheme.onSurface,
+                textColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
             placeholder = {
                 placeholder?.let {
