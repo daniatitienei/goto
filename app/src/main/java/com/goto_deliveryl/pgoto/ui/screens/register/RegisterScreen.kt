@@ -1,12 +1,7 @@
 package com.goto_deliveryl.pgoto.ui.screens.register
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.drawable.VectorDrawable
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
@@ -21,29 +16,27 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import com.goto_deliveryl.pgoto.R
 import com.goto_deliveryl.pgoto.ui.theme.GotoTheme
 import com.goto_deliveryl.pgoto.ui.theme.Lime900
 import com.goto_deliveryl.pgoto.ui.utils.components.ThirdPartyAuthenticationMethod
+import com.goto_deliveryl.pgoto.ui.utils.enum.TextFieldType
+import kotlinx.coroutines.launch
 
+@ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @Composable
 fun RegisterScreen() {
@@ -60,9 +53,21 @@ fun RegisterScreen() {
         mutableStateOf("")
     }
 
+    var isPasswordObscured by remember {
+        mutableStateOf(true)
+    }
+
     var confirmPassword by remember {
         mutableStateOf("")
     }
+
+    var isConfirmPasswordObscured by remember {
+        mutableStateOf(true)
+    }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold {
         Column(
@@ -99,40 +104,80 @@ fun RegisterScreen() {
                     leadingIcon = {
                         Icon(Icons.Outlined.Email, contentDescription = null)
                     },
-                    onImeAction = { /*TODO*/ },
-                    keyboardType = KeyboardType.Email,
+                    onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
                     placeholder = stringResource(id = R.string.email),
+                    keyboardType = KeyboardType.Email,
+                    textFieldType = TextFieldType.EMAIL
                 )
 
                 RegistrationTextField(
                     value = name,
                     onValueChange = { name = it },
                     placeholder = stringResource(id = R.string.name),
-                    onImeAction = { /*TODO*/ },
+                    onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
                     leadingIcon = {
                         Icon(Icons.Outlined.Person, contentDescription = null)
                     },
+                    textFieldType = TextFieldType.NAME,
+                    capitalization = KeyboardCapitalization.Words
                 )
 
                 RegistrationTextField(
                     value = password,
                     onValueChange = { password = it },
-                    onImeAction = { /*TODO*/ },
+                    onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
                     placeholder = stringResource(id = R.string.password),
                     leadingIcon = {
-                        Icon(Icons.Outlined.Lock, contentDescription = null)
+                        Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
                     },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                isPasswordObscured = !isPasswordObscured
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = if (isPasswordObscured) R.drawable.ic_cutted_eye else R.drawable.ic_eye),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    },
+                    isObscured = isPasswordObscured,
+                    textFieldType = TextFieldType.PASSWORD,
+                    keyboardType = KeyboardType.Password
                 )
 
                 RegistrationTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     imeAction = ImeAction.Done,
-                    onImeAction = { /*TODO*/ },
+                    onImeAction = {
+                        focusManager.clearFocus()
+                        coroutineScope.launch {
+                            keyboardController?.hide()
+                        }
+                    },
                     placeholder = stringResource(id = R.string.confirm_password),
                     leadingIcon = {
-                        Icon(Icons.Outlined.Lock, contentDescription = null)
-                    }
+                        Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                isConfirmPasswordObscured = !isConfirmPasswordObscured
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = if (isConfirmPasswordObscured) R.drawable.ic_cutted_eye else R.drawable.ic_eye),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    },
+                    isObscured = isConfirmPasswordObscured,
+                    textFieldType = TextFieldType.PASSWORD,
+                    keyboardType = KeyboardType.Password
                 )
 
                 Spacer(modifier = Modifier.height(5.dp))
@@ -203,15 +248,18 @@ fun RegisterScreen() {
 private fun RegistrationTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     imeAction: ImeAction = ImeAction.Next,
     onImeAction: (KeyboardActionScope) -> Unit,
     shape: Shape = RoundedCornerShape(10.dp),
-    modifier: Modifier = Modifier.fillMaxWidth(),
     keyboardType: KeyboardType = KeyboardType.Text,
     errorMessage: String? = null,
     placeholder: String?,
+    textFieldType: TextFieldType = TextFieldType.TEXT,
+    isObscured: Boolean? = null,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.None
 ) {
     Column {
         TextField(
@@ -232,9 +280,13 @@ private fun RegistrationTextField(
                     )
                 }
             },
+            singleLine = true,
+            visualTransformation = if (textFieldType == TextFieldType.PASSWORD && isObscured == true) PasswordVisualTransformation() else VisualTransformation.None,
             shape = shape,
             leadingIcon = leadingIcon,
-            modifier = modifier,
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(modifier),
             trailingIcon = trailingIcon,
             keyboardActions = KeyboardActions(
                 onDone = onImeAction,
@@ -246,7 +298,8 @@ private fun RegistrationTextField(
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType,
-                imeAction = imeAction
+                imeAction = imeAction,
+                capitalization = capitalization
             ),
             isError = errorMessage != null
         )
@@ -263,6 +316,7 @@ private fun RegistrationTextField(
     }
 }
 
+@ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @Preview(showBackground = true)
 @Composable
@@ -272,6 +326,7 @@ private fun LightRegisterPreview() {
     }
 }
 
+@ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalMaterial3Api
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
