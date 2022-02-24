@@ -1,4 +1,4 @@
-package com.goto_deliveryl.pgoto
+package com.goto_deliveryl.pgoto.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,9 +10,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.goto_deliveryl.pgoto.ui.screens.register.RegisterScreen
 import com.goto_deliveryl.pgoto.ui.theme.GotoTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                RegisterScreen()
+                Navigation()
             }
         }
     }

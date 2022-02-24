@@ -11,4 +11,7 @@
     <string name="login">Login</string>
     <string name="do_not_have_an_account">Don\'t have an account?</string>
     <string name="already_have_an_account">Already have an account?</string>
+    <string name="field_must_be_completed">Field must be completed.</string>
+    <string name="invalid_email">Email address is invalid.</string>
+    <string name="create_an_account">Create an account</string>
 </resources>
