@@ -11,4 +11,7 @@
     <string name="login">Conectează-te</string>
     <string name="do_not_have_an_account">Nu ai cont?</string>
     <string name="already_have_an_account">Deja ai cont?</string>
+    <string name="field_must_be_completed">Câmpul trebuie completat.</string>
+    <string name="invalid_email">Adresa de email este invalidă.</string>
+    <string name="create_an_account">Creează-ți un cont</string>
 </resources>

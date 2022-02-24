@@ -37,5 +37,5 @@ private val darkColorScheme = darkColorScheme(
     background = DarkGreen900,
     onBackground = Lime900,
     onSurface = DarkGreen600,
-    surface = DarkGreen900
+    surface = DarkGreen900,
 )
