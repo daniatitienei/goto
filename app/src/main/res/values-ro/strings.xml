@@ -14,4 +14,8 @@
     <string name="field_must_be_completed">Câmpul trebuie completat.</string>
     <string name="invalid_email">Adresa de email este invalidă.</string>
     <string name="create_an_account">Creează-ți un cont</string>
+    <string name="sign_in">Conectare</string>
+    <string name="welcome_back">Bine ai revenit!</string>
+    <string name="register">Creează-ți unul</string>
+    <string name="enter_account">Intră în cont</string>
 </resources>
