@@ -14,4 +14,9 @@
     <string name="field_must_be_completed">Field must be completed.</string>
     <string name="invalid_email">Email address is invalid.</string>
     <string name="create_an_account">Create an account</string>
+    <string name="sign_in">Sign in</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="register">Create one</string>
+    <string name="tod">dsadsa</string>
+    <string name="enter_account">Enter account</string>
 </resources>

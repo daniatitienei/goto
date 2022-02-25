@@ -1,15 +1,7 @@
-package com.goto_deliveryl.pgoto.ui.screens.register
+package com.goto_deliveryl.pgoto.ui.screens.login
 
 import android.app.Application
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActionScope
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -18,20 +10,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.*
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_deliveryl.pgoto.R
 import com.goto_deliveryl.pgoto.ui.theme.GotoTheme
-import com.goto_deliveryl.pgoto.ui.theme.Lime900
 import com.goto_deliveryl.pgoto.ui.utils.Screens
 import com.goto_deliveryl.pgoto.ui.utils.UiEvent
 import com.goto_deliveryl.pgoto.ui.utils.components.GotoTextField
@@ -40,18 +31,14 @@ import com.goto_deliveryl.pgoto.ui.utils.enum.TextFieldType
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-@ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
+@ExperimentalComposeUiApi
 @Composable
-fun RegisterScreen(
-    viewModel: RegisterViewModel = hiltViewModel(),
-    onNavigate: (UiEvent.Navigate) -> Unit,
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onNavigate: (UiEvent.Navigate) -> Unit
 ) {
     var email by remember {
-        mutableStateOf("")
-    }
-
-    var name by remember {
         mutableStateOf("")
     }
 
@@ -100,11 +87,11 @@ fun RegisterScreen(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = stringResource(id = R.string.welcome),
+                        text = stringResource(id = R.string.welcome_back),
                         style = MaterialTheme.typography.titleLarge,
                         textAlign = TextAlign.Center
                     )
-                    Text(text = stringResource(id = R.string.create_an_account))
+                    Text(text = stringResource(id = R.string.enter_account))
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
@@ -120,19 +107,6 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Email,
                     textFieldType = TextFieldType.EMAIL,
                     errorMessage = viewModel.emailError.value
-                )
-
-                GotoTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = stringResource(id = R.string.name),
-                    onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
-                    leadingIcon = {
-                        Icon(Icons.Outlined.Person, contentDescription = null)
-                    },
-                    textFieldType = TextFieldType.NAME,
-                    capitalization = KeyboardCapitalization.Words,
-                    errorMessage = viewModel.nameError.value
                 )
 
                 GotoTextField(
@@ -172,15 +146,15 @@ fun RegisterScreen(
                 ElevatedButton(
                     onClick = {
                         viewModel.onEvent(
-                            RegisterViewModel.RegisterEvents.OnValidate(
-                                email, name, password
+                            LoginViewModel.LoginEvents.OnValidate(
+                                email, password
                             )
                         )
                     },
                     modifier = Modifier.fillMaxWidth(0.6f)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.sign_up),
+                        text = stringResource(id = R.string.sign_in),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -211,7 +185,7 @@ fun RegisterScreen(
                             imagePainter = painterResource(id = R.drawable.ic_google_logo),
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
-                                viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithGoogle)
+                                viewModel.onEvent(LoginViewModel.LoginEvents.OnContinueWithGoogle)
                             }
                         )
 
@@ -219,7 +193,7 @@ fun RegisterScreen(
                             imagePainter = painterResource(id = R.drawable.ic_facebook_logo),
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
-                                viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithFacebook)
+                                viewModel.onEvent(LoginViewModel.LoginEvents.OnContinueWithFacebook)
                             }
                         )
                     }
@@ -234,9 +208,10 @@ fun RegisterScreen(
                     TextButton(
                         onClick = {
                             viewModel.onEvent(
-                                RegisterViewModel.RegisterEvents.OnNavigate(
-                                    route = Screens.Login.route, popUpTo = UiEvent.Navigate.PopUpTo(
-                                        route = Screens.Register.route,
+                                LoginViewModel.LoginEvents.OnNavigate(
+                                    route = Screens.Register.route,
+                                    popUpTo = UiEvent.Navigate.PopUpTo(
+                                        route = Screens.Login.route,
                                         inclusive = true
                                     )
                                 )
@@ -244,8 +219,8 @@ fun RegisterScreen(
                         }
                     ) {
                         Text(
-                            text = stringResource(id = R.string.already_have_an_account) + '\n'
-                                    + stringResource(id = R.string.login),
+                            text = stringResource(id = R.string.do_not_have_an_account) + '\n'
+                                    + stringResource(id = R.string.register),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -257,27 +232,26 @@ fun RegisterScreen(
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
-@Preview(showBackground = true)
+@Preview
 @Composable
-private fun LightRegisterPreview() {
+private fun LightLoginPreview() {
     GotoTheme {
-        RegisterScreen(
+        LoginScreen(
             onNavigate = {},
-            viewModel = RegisterViewModel(application = Application())
+            viewModel = LoginViewModel(application = Application())
         )
     }
 }
 
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
 @ExperimentalMaterial3Api
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview
 @Composable
-private fun DarkRegisterPreview() {
+private fun DarkLoginPreview() {
     GotoTheme {
-        RegisterScreen(
+        LoginScreen(
             onNavigate = {},
-            viewModel = RegisterViewModel(application = Application())
+            viewModel = LoginViewModel(application = Application())
         )
     }
 }

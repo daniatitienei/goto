@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.goto_deliveryl.pgoto.ui.screens.login.LoginScreen
 import com.goto_deliveryl.pgoto.ui.screens.register.RegisterScreen
 import com.goto_deliveryl.pgoto.ui.utils.Routes
 import com.goto_deliveryl.pgoto.ui.utils.Screens
@@ -38,16 +39,20 @@ fun NavGraphBuilder.authenticationGraph(navController: NavController) {
             RegisterScreen { destination ->
                 navController.navigate(destination.route) {
                     launchSingleTop = true
+
+                    destination.popUpTo?.let { popUpTo ->
+                        popUpTo(route = popUpTo.route) {
+                            inclusive = popUpTo.inclusive
+                        }
+                    }
                 }
             }
         }
         composable(Screens.Login.route) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(align = Alignment.Center)
-            ) {
-                Text(text = "login")
+            LoginScreen { destination ->
+                navController.navigate(destination.route) {
+                    launchSingleTop = true
+                }
             }
         }
     }

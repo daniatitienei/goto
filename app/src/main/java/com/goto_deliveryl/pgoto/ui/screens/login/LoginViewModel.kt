@@ -1,4 +1,4 @@
-package com.goto_deliveryl.pgoto.ui.screens.register
+package com.goto_deliveryl.pgoto.ui.screens.login
 
 import android.app.Application
 import android.util.Patterns
@@ -12,27 +12,25 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 @HiltViewModel
-class RegisterViewModel @Inject constructor(
+class LoginViewModel @Inject constructor(
     private val application: Application
 ) : ViewModel() {
-    sealed class RegisterEvents {
+    sealed class LoginEvents {
         data class OnValidate(
             val email: String,
-            val name: String,
             val password: String,
-        ) : RegisterEvents()
+        ) : LoginEvents()
 
         data class OnNavigate(
             val route: String,
             val popUpTo: UiEvent.Navigate.PopUpTo? = null
-        ) : RegisterEvents()
+        ) : LoginEvents()
 
-        object OnContinueWithGoogle : RegisterEvents()
-        object OnContinueWithFacebook : RegisterEvents()
+        object OnContinueWithGoogle : LoginEvents()
+        object OnContinueWithFacebook : LoginEvents()
     }
 
     private var _emailError = mutableStateOf<String?>(null)
@@ -41,17 +39,13 @@ class RegisterViewModel @Inject constructor(
     private val _passwordError = mutableStateOf<String?>(null)
     val passwordError: State<String?> = _passwordError
 
-    private val _nameError = mutableStateOf<String?>(null)
-    val nameError: State<String?> = _nameError
-
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    fun onEvent(event: RegisterEvents) {
+    fun onEvent(event: LoginEvents) {
         when (event) {
-            is RegisterEvents.OnValidate -> {
+            is LoginEvents.OnValidate -> {
                 _passwordError.value = null
-                _nameError.value = null
                 _emailError.value = null
 
                 if (event.password.isEmpty()) {
@@ -60,15 +54,12 @@ class RegisterViewModel @Inject constructor(
                 } else if (event.email.isEmpty()) {
                     _emailError.value = application.getString(R.string.field_must_be_completed)
                     return
-                } else if (event.name.isEmpty()) {
-                    _nameError.value = application.getString(R.string.field_must_be_completed)
-                    return
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(event.email).matches()) {
                     _emailError.value = application.getString(R.string.invalid_email)
                     return
                 }
             }
-            is RegisterEvents.OnNavigate -> {
+            is LoginEvents.OnNavigate -> {
                 sendEvent(
                     UiEvent.Navigate(
                         route = event.route,
@@ -76,10 +67,10 @@ class RegisterViewModel @Inject constructor(
                     )
                 )
             }
-            is RegisterEvents.OnContinueWithFacebook -> {
+            is LoginEvents.OnContinueWithFacebook -> {
                 /* TODO */
             }
-            is RegisterEvents.OnContinueWithGoogle -> {
+            is LoginEvents.OnContinueWithGoogle -> {
                 /* TODO */
             }
         }
