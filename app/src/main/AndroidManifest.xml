@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.goto_deliveryl.pgoto">
+    package="com.goto_delivery.pgoto">
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:name=".GotoApplication"
+        android:name="com.goto_delivery.pgoto.GotoApplication"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting">
         <activity
-            android:name=".ui.MainActivity"
+            android:name="com.goto_delivery.pgoto.ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>
