@@ -9,7 +9,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
