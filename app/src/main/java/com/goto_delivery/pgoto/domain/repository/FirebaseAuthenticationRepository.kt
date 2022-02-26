@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface FirebaseAuthenticationRepository {
     fun registerWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
+    fun loginWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
 
     fun continueWithGoogle(): Flow<Resource<FirebaseUser>>
 

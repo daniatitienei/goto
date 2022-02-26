@@ -87,14 +87,16 @@ class RegisterViewModel @Inject constructor(
 
                             }
                             is Resource.Error -> {
-                                /* TODO */
                                 Log.d("register", "error")
-                                if (resource.exception is FirebaseAuthWeakPasswordException) {
-                                    _passwordError.value = application.getString(R.string.error_weak_password)
-                                } else if (resource.exception is FirebaseAuthInvalidCredentialsException) {
-                                    _emailError.value = application.getString(R.string.error_invalid_email)
-                                } else if (resource.exception is FirebaseAuthUserCollisionException) {
-                                    _emailError.value = application.getString(R.string.error_user_exists)
+                                when (resource.exception) {
+                                    is FirebaseAuthWeakPasswordException -> {
+                                        _passwordError.value =
+                                            application.getString(R.string.error_weak_password)
+                                    }
+                                    is FirebaseAuthUserCollisionException -> {
+                                        _emailError.value =
+                                            application.getString(R.string.error_user_exists)
+                                    }
                                 }
                             }
                         }

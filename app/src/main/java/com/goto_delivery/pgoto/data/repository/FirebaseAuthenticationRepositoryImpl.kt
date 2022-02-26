@@ -41,6 +41,29 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
 
     }.flowOn(Dispatchers.IO)
 
+    override fun loginWithEmailAndPassword(
+        email: String,
+        password: String
+    ): Flow<Resource<FirebaseUser>> = callbackFlow {
+
+        trySend(Resource.Loading<FirebaseUser>())
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                val result = if (task.isSuccessful) {
+                    val user = task.result.user
+                    Resource.Success<FirebaseUser>(data = user)
+                } else {
+                    Resource.Error<FirebaseUser>(exception = task.exception!!)
+                }
+
+                trySend(result).isSuccess
+            }
+
+        awaitClose { cancel() }
+
+    }.flowOn(Dispatchers.IO)
+
     override fun continueWithGoogle(): Flow<Resource<FirebaseUser>> {
         TODO("Not yet implemented")
     }

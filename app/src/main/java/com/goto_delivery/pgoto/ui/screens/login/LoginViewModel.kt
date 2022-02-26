@@ -6,17 +6,27 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.common.api.Response
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
+import com.goto_delivery.pgoto.ui.utils.Resource
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val useCases: AuthenticationUseCases
 ) : ViewModel() {
     sealed class LoginEvents {
         data class OnValidate(
@@ -58,6 +68,30 @@ class LoginViewModel @Inject constructor(
                     _emailError.value = application.getString(R.string.error_invalid_email)
                     return
                 }
+
+                useCases.login(email = event.email, password = event.password)
+                    .onEach { resource ->
+                        when (resource) {
+                            is Resource.Success -> {
+                                /* TODO */
+                            }
+                            is Resource.Loading -> {
+
+                            }
+                            is Resource.Error -> {
+                                when (resource.exception) {
+                                    is FirebaseAuthInvalidUserException -> {
+                                        _emailError.value =
+                                            application.getString(R.string.error_user_does_not_exist)
+                                    }
+                                    is FirebaseAuthInvalidCredentialsException -> {
+                                        _passwordError.value =
+                                            application.getString(R.string.error_wrong_password)
+                                    }
+                                }
+                            }
+                        }
+                    }.launchIn(viewModelScope)
             }
             is LoginEvents.OnNavigate -> {
                 sendEvent(
