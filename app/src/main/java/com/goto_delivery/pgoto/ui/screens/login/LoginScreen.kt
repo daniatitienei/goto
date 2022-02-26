@@ -228,29 +228,3 @@ fun LoginScreen(
         }
     }
 }
-
-@ExperimentalComposeUiApi
-@ExperimentalMaterial3Api
-@Preview
-@Composable
-private fun LightLoginPreview() {
-    GotoTheme {
-        LoginScreen(
-            onNavigate = {},
-            viewModel = LoginViewModel(application = Application())
-        )
-    }
-}
-
-@ExperimentalComposeUiApi
-@ExperimentalMaterial3Api
-@Preview
-@Composable
-private fun DarkLoginPreview() {
-    GotoTheme {
-        LoginScreen(
-            onNavigate = {},
-            viewModel = LoginViewModel(application = Application())
-        )
-    }
-}

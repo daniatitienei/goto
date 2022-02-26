@@ -12,11 +12,15 @@
     <string name="do_not_have_an_account">Don\'t have an account?</string>
     <string name="already_have_an_account">Already have an account?</string>
     <string name="field_must_be_completed">Field must be completed.</string>
-    <string name="invalid_email">Email address is invalid.</string>
+    <string name="error_invalid_email">Email address is invalid.</string>
     <string name="create_an_account">Create an account</string>
     <string name="sign_in">Sign in</string>
     <string name="welcome_back">Welcome back!</string>
     <string name="register">Create one</string>
     <string name="tod">dsadsa</string>
     <string name="enter_account">Enter account</string>
+    <string name="error_weak_password">The password is weak.</string>
+    <string name="error_user_exists">This email is already used.</string>
+    <string name="error_wrong_password">Wrong password.</string>
+    <string name="error_user_does_not_exist">The user doesn\'t exist.</string>
 </resources>
