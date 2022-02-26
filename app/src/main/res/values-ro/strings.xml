@@ -22,4 +22,5 @@
     <string name="error_user_exists">Acest email deja este folosit.</string>
     <string name="error_wrong_password">Parolă greșită.</string>
     <string name="error_user_does_not_exist">Utilizatorul nu există.</string>
+    <string name="google_auth_failed">Autentificarea cu Google a eșuat.</string>
 </resources>
