@@ -1,22 +1,31 @@
 package com.goto_delivery.pgoto.ui.screens.register
 
 import android.app.Application
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
+import com.goto_delivery.pgoto.ui.utils.Resource
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val useCases: AuthenticationUseCases
 ) : ViewModel() {
     sealed class RegisterEvents {
         data class OnValidate(
@@ -63,9 +72,33 @@ class RegisterViewModel @Inject constructor(
                     _nameError.value = application.getString(R.string.field_must_be_completed)
                     return
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(event.email).matches()) {
-                    _emailError.value = application.getString(R.string.invalid_email)
+                    _emailError.value = application.getString(R.string.error_invalid_email)
                     return
                 }
+
+                useCases.register(email = event.email, password = event.password)
+                    .onEach { resource ->
+                        when (resource) {
+                            is Resource.Success -> {
+                                /* TODO */
+                                Log.d("register", "success ${resource.data?.email}")
+                            }
+                            is Resource.Loading -> {
+
+                            }
+                            is Resource.Error -> {
+                                /* TODO */
+                                Log.d("register", "error")
+                                if (resource.exception is FirebaseAuthWeakPasswordException) {
+                                    _passwordError.value = application.getString(R.string.error_weak_password)
+                                } else if (resource.exception is FirebaseAuthInvalidCredentialsException) {
+                                    _emailError.value = application.getString(R.string.error_invalid_email)
+                                } else if (resource.exception is FirebaseAuthUserCollisionException) {
+                                    _emailError.value = application.getString(R.string.error_user_exists)
+                                }
+                            }
+                        }
+                    }.launchIn(viewModelScope)
             }
             is RegisterEvents.OnNavigate -> {
                 sendEvent(

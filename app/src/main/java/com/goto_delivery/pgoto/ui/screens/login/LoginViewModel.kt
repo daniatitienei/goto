@@ -55,7 +55,7 @@ class LoginViewModel @Inject constructor(
                     _emailError.value = application.getString(R.string.field_must_be_completed)
                     return
                 } else if (!Patterns.EMAIL_ADDRESS.matcher(event.email).matches()) {
-                    _emailError.value = application.getString(R.string.invalid_email)
+                    _emailError.value = application.getString(R.string.error_invalid_email)
                     return
                 }
             }

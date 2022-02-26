@@ -22,6 +22,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
+import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
+import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Screens
 import com.goto_delivery.pgoto.ui.utils.UiEvent
@@ -243,32 +246,5 @@ fun RegisterScreen(
                 }
             }
         }
-    }
-}
-
-@ExperimentalComposeUiApi
-@ExperimentalMaterial3Api
-@Preview(showBackground = true)
-@Composable
-private fun LightRegisterPreview() {
-    GotoTheme {
-        RegisterScreen(
-            onNavigate = {},
-            viewModel = RegisterViewModel(application = Application())
-        )
-    }
-}
-
-@ExperimentalComposeUiApi
-@ExperimentalMaterialApi
-@ExperimentalMaterial3Api
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun DarkRegisterPreview() {
-    GotoTheme {
-        RegisterScreen(
-            onNavigate = {},
-            viewModel = RegisterViewModel(application = Application())
-        )
     }
 }
