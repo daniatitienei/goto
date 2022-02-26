@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.Response
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuthException
@@ -39,7 +40,7 @@ class LoginViewModel @Inject constructor(
             val popUpTo: UiEvent.Navigate.PopUpTo? = null
         ) : LoginEvents()
 
-        object OnContinueWithGoogle : LoginEvents()
+        data class OnContinueWithGoogle(val account: GoogleSignInAccount?) : LoginEvents()
         object OnContinueWithFacebook : LoginEvents()
     }
 
@@ -105,7 +106,24 @@ class LoginViewModel @Inject constructor(
                 /* TODO */
             }
             is LoginEvents.OnContinueWithGoogle -> {
-                /* TODO */
+                if (event.account != null) {
+                    useCases.continueWithGoogle(event.account.idToken!!)
+                        .onEach { resource ->
+                            when (resource) {
+                                is Resource.Success -> {
+                                    /* TODO */
+                                }
+                                is Resource.Loading -> {
+                                    /* TODO */
+                                }
+                                is Resource.Error -> {
+                                    /* TODO */
+                                }
+                            }
+                        }.launchIn(viewModelScope)
+                } else {
+                    sendEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
+                }
             }
         }
     }

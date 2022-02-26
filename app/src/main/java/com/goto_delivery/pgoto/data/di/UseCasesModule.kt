@@ -2,6 +2,7 @@ package com.goto_delivery.pgoto.data.di
 
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
 import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
+import com.goto_delivery.pgoto.domain.use_case.authentication.GoogleAuthenticationUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.LoginUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
 import dagger.Module
@@ -19,7 +20,8 @@ object UseCasesModule {
     fun provideAuthenticationUseCases(repository: FirebaseAuthenticationRepository) =
         AuthenticationUseCases(
             register = RegisterUseCase(repository = repository),
-            login = LoginUseCase(repository = repository)
+            login = LoginUseCase(repository = repository),
+            continueWithGoogle = GoogleAuthenticationUseCase(repository = repository)
         )
 
 }

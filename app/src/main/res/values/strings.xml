@@ -23,4 +23,5 @@
     <string name="error_user_exists">This email is already used.</string>
     <string name="error_wrong_password">Wrong password.</string>
     <string name="error_user_does_not_exist">The user doesn\'t exist.</string>
+    <string name="google_auth_failed">Google authentication failed.</string>
 </resources>

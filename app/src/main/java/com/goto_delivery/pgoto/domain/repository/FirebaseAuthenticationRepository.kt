@@ -8,7 +8,7 @@ interface FirebaseAuthenticationRepository {
     fun registerWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
     fun loginWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
 
-    fun continueWithGoogle(): Flow<Resource<FirebaseUser>>
+    fun continueWithGoogle(idToken: String): Flow<Resource<FirebaseUser>>
 
     fun continueWithFacebook(): Flow<Resource<FirebaseUser>>
 }

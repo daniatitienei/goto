@@ -3,6 +3,7 @@ package com.goto_delivery.pgoto.data.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.goto_delivery.pgoto.data.di.FirebaseModule
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
 import com.goto_delivery.pgoto.ui.utils.Resource
@@ -64,8 +65,25 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
 
     }.flowOn(Dispatchers.IO)
 
-    override fun continueWithGoogle(): Flow<Resource<FirebaseUser>> {
-        TODO("Not yet implemented")
+    override fun continueWithGoogle(idToken: String): Flow<Resource<FirebaseUser>> = callbackFlow {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+        trySend(Resource.Loading<FirebaseUser>())
+
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                val result = if (task.isSuccessful) {
+                    Log.d("login", "google sign in success")
+                    Resource.Success<FirebaseUser>(task.result.user)
+                } else {
+                    Log.d("login", "google sign in failed")
+                    Resource.Error<FirebaseUser>(task.exception!!)
+                }
+
+                trySend(result).isSuccess
+            }
+
+        awaitClose { close() }
     }
 
     override fun continueWithFacebook(): Flow<Resource<FirebaseUser>> {

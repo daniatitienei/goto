@@ -1,9 +1,6 @@
 package com.goto_delivery.pgoto.ui.screens.register
 
-import android.app.Application
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -18,16 +15,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
-import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
-import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Screens
 import com.goto_delivery.pgoto.ui.utils.UiEvent
+import com.goto_delivery.pgoto.ui.utils.authentication.google.googleSignInActivityResult
 import com.goto_delivery.pgoto.ui.utils.components.GotoTextField
 import com.goto_delivery.pgoto.ui.utils.components.ThirdPartyAuthenticationMethod
 import com.goto_delivery.pgoto.ui.utils.enum.TextFieldType
@@ -71,6 +64,13 @@ fun RegisterScreen(
             }
         }
     }
+
+    val signInRequestCode = 1
+
+    val googleAuthResultLauncher =
+        googleSignInActivityResult { account ->
+            viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithGoogle(account))
+        }
 
     Scaffold {
         Column(
@@ -205,7 +205,7 @@ fun RegisterScreen(
                             imagePainter = painterResource(id = R.drawable.ic_google_logo),
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
-                                viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithGoogle)
+                                googleAuthResultLauncher.launch(signInRequestCode)
                             }
                         )
 

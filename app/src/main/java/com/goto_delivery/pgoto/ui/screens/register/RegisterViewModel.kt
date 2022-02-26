@@ -3,11 +3,12 @@ package com.goto_delivery.pgoto.ui.screens.register
 import android.app.Application
 import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.goto_delivery.pgoto.R
@@ -39,7 +40,7 @@ class RegisterViewModel @Inject constructor(
             val popUpTo: UiEvent.Navigate.PopUpTo? = null
         ) : RegisterEvents()
 
-        object OnContinueWithGoogle : RegisterEvents()
+        data class OnContinueWithGoogle(val account: GoogleSignInAccount?) : RegisterEvents()
         object OnContinueWithFacebook : RegisterEvents()
     }
 
@@ -114,7 +115,24 @@ class RegisterViewModel @Inject constructor(
                 /* TODO */
             }
             is RegisterEvents.OnContinueWithGoogle -> {
-                /* TODO */
+                if (event.account != null) {
+                    useCases.continueWithGoogle(event.account.idToken!!)
+                        .onEach { resource ->
+                            when (resource) {
+                                is Resource.Success -> {
+                                    /* TODO */
+                                }
+                                is Resource.Loading -> {
+                                    /* TODO */
+                                }
+                                is Resource.Error -> {
+                                    /* TODO */
+                                }
+                            }
+                        }.launchIn(viewModelScope)
+                } else {
+                    sendEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
+                }
             }
         }
     }

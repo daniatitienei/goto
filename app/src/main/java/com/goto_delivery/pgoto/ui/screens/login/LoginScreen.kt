@@ -1,9 +1,11 @@
 package com.goto_delivery.pgoto.ui.screens.login
 
-import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,13 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Screens
 import com.goto_delivery.pgoto.ui.utils.UiEvent
+import com.goto_delivery.pgoto.ui.utils.authentication.google.googleSignInActivityResult
 import com.goto_delivery.pgoto.ui.utils.components.GotoTextField
 import com.goto_delivery.pgoto.ui.utils.components.ThirdPartyAuthenticationMethod
 import com.goto_delivery.pgoto.ui.utils.enum.TextFieldType
@@ -63,6 +64,13 @@ fun LoginScreen(
             }
         }
     }
+
+    val signInRequestCode = 1
+
+    val googleAuthResultLauncher =
+        googleSignInActivityResult { account ->
+            viewModel.onEvent(LoginViewModel.LoginEvents.OnContinueWithGoogle(account))
+        }
 
     Scaffold {
         Column(
@@ -184,7 +192,7 @@ fun LoginScreen(
                             imagePainter = painterResource(id = R.drawable.ic_google_logo),
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
-                                viewModel.onEvent(LoginViewModel.LoginEvents.OnContinueWithGoogle)
+                                googleAuthResultLauncher.launch(signInRequestCode)
                             }
                         )
 
