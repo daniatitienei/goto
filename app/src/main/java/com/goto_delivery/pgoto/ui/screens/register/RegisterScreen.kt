@@ -163,7 +163,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                ElevatedButton(
+                Button(
                     onClick = {
                         viewModel.onEvent(
                             RegisterViewModel.RegisterEvents.OnValidate(

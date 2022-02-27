@@ -18,13 +18,14 @@ fun GotoTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
 
 private val lightColorScheme = lightColorScheme(
     primary = Lime900,
-    onPrimary = Color.Black,
+    onPrimary = Color.White,
     primaryContainer = LightGrey900,
     onPrimaryContainer = Color.Black,
     secondary = Lime700,
     onSecondary = Color.White,
     onSurface = LightGrey900,
     surface = Color.White,
+    onBackground = Lime900
 )
 
 private val darkColorScheme = darkColorScheme(
