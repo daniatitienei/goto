@@ -69,7 +69,7 @@ fun RegisterScreen(
 
     val googleAuthResultLauncher =
         googleSignInActivityResult { account ->
-            viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithGoogle(account))
+            viewModel.onEvent(RegisterEvents.OnContinueWithGoogle(account))
         }
 
     Scaffold {
@@ -166,7 +166,7 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         viewModel.onEvent(
-                            RegisterViewModel.RegisterEvents.OnValidate(
+                            RegisterEvents.OnValidate(
                                 email, name, password
                             )
                         )
@@ -213,7 +213,7 @@ fun RegisterScreen(
                             imagePainter = painterResource(id = R.drawable.ic_facebook_logo),
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
-                                viewModel.onEvent(RegisterViewModel.RegisterEvents.OnContinueWithFacebook)
+                                viewModel.onEvent(RegisterEvents.OnContinueWithFacebook)
                             }
                         )
                     }
@@ -228,7 +228,7 @@ fun RegisterScreen(
                     TextButton(
                         onClick = {
                             viewModel.onEvent(
-                                RegisterViewModel.RegisterEvents.OnNavigate(
+                                RegisterEvents.OnNavigate(
                                     route = Screens.Login.route, popUpTo = UiEvent.Navigate.PopUpTo(
                                         route = Screens.Register.route,
                                         inclusive = true

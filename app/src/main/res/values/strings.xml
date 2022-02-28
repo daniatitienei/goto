@@ -24,4 +24,10 @@
     <string name="error_wrong_password">Wrong password.</string>
     <string name="error_user_does_not_exist">The user doesn\'t exist.</string>
     <string name="google_auth_failed">Google authentication failed.</string>
+    <string name="address">Address</string>
+    <string name="use_location">Use location</string>
+    <string name="add_by_yourself">Add by yourself</string>
+    <string name="we_recommend_that">We recommend that you use</string>
+    <string name="the_location">the location</string>
+    <string name="for_faster_results">for faster results</string>
 </resources>

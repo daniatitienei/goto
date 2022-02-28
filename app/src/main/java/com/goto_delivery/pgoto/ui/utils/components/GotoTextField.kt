@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
-import com.goto_delivery.pgoto.ui.theme.Lime900
+import com.goto_delivery.pgoto.ui.theme.Lime80
 import com.goto_delivery.pgoto.ui.utils.enum.TextFieldType
 
 @Composable
@@ -45,8 +45,8 @@ fun GotoTextField(
             colors = TextFieldDefaults.textFieldColors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Lime900,
-                backgroundColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = Lime80,
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 textColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
             placeholder = {

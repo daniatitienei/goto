@@ -28,22 +28,6 @@ class RegisterViewModel @Inject constructor(
     private val application: Application,
     private val useCases: AuthenticationUseCases
 ) : ViewModel() {
-    sealed class RegisterEvents {
-        data class OnValidate(
-            val email: String,
-            val name: String,
-            val password: String,
-        ) : RegisterEvents()
-
-        data class OnNavigate(
-            val route: String,
-            val popUpTo: UiEvent.Navigate.PopUpTo? = null
-        ) : RegisterEvents()
-
-        data class OnContinueWithGoogle(val account: GoogleSignInAccount?) : RegisterEvents()
-        object OnContinueWithFacebook : RegisterEvents()
-    }
-
     private var _emailError = mutableStateOf<String?>(null)
     val emailError: State<String?> = _emailError
 
