@@ -1,6 +1,7 @@
 package com.goto_delivery.pgoto.data.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.goto_delivery.pgoto.data.repository.FirebaseAuthenticationRepositoryImpl
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
 import dagger.Module
@@ -18,7 +19,8 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideFirebaseAuthenticationRepository(
-        auth: FirebaseAuth
+        auth: FirebaseAuth,
+        firestore: FirebaseFirestore
     ): FirebaseAuthenticationRepository =
-        FirebaseAuthenticationRepositoryImpl(auth)
+        FirebaseAuthenticationRepositoryImpl(auth, firestore)
 }

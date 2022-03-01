@@ -14,6 +14,8 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
+import com.goto_delivery.pgoto.ui.utils.Routes
+import com.goto_delivery.pgoto.ui.utils.Screens
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -61,12 +63,17 @@ class RegisterViewModel @Inject constructor(
                     return
                 }
 
-                useCases.register(email = event.email, password = event.password)
+                useCases.register(email = event.email, password = event.password, name = event.name)
                     .onEach { resource ->
                         when (resource) {
                             is Resource.Success -> {
-                                /* TODO */
                                 Log.d("register", "success ${resource.data?.email}")
+                                sendEvent(
+                                    UiEvent.Navigate(
+                                        route = Screens.TurnOnLocation.route,
+                                        popUpTo = UiEvent.Navigate.PopUpTo(route = Routes.AuthenticationGraph, inclusive = true)
+                                    )
+                                )
                             }
                             is Resource.Loading -> {
 
@@ -104,7 +111,12 @@ class RegisterViewModel @Inject constructor(
                         .onEach { resource ->
                             when (resource) {
                                 is Resource.Success -> {
-                                    /* TODO */
+                                    sendEvent(
+                                        UiEvent.Navigate(
+                                            route = Screens.TurnOnLocation.route,
+                                            popUpTo = UiEvent.Navigate.PopUpTo(route = Routes.AuthenticationGraph, inclusive = true)
+                                        )
+                                    )
                                 }
                                 is Resource.Loading -> {
                                     /* TODO */

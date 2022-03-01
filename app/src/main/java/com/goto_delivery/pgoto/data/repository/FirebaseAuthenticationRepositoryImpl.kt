@@ -4,10 +4,10 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.goto_delivery.pgoto.data.di.FirebaseModule
+import com.google.firebase.firestore.FirebaseFirestore
+import com.goto_delivery.pgoto.domain.model.User
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
 import com.goto_delivery.pgoto.ui.utils.Resource
-import dagger.Component
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -17,11 +17,13 @@ import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class FirebaseAuthenticationRepositoryImpl @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore
 ) : FirebaseAuthenticationRepository {
     override fun registerWithEmailAndPassword(
         email: String,
-        password: String
+        password: String,
+        name: String
     ): Flow<Resource<FirebaseUser>> = callbackFlow {
 
         trySend(Resource.Loading<FirebaseUser>())
@@ -30,6 +32,7 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
             .addOnCompleteListener { task ->
                 val result = if (task.isSuccessful) {
                     val user = task.result.user
+
                     Resource.Success<FirebaseUser>(data = user)
                 } else {
                     Resource.Error<FirebaseUser>(exception = task.exception!!)
@@ -41,6 +44,19 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
         awaitClose { cancel() }
 
     }.flowOn(Dispatchers.IO)
+
+    private fun createUser(user: FirebaseUser, name: String? = null) {
+
+        val userInfo = User(
+            email = user.email!!,
+            fullName = user.displayName ?: name!!,
+        )
+
+        firestore.collection("users")
+            .document(user.uid)
+            .set(userInfo)
+            .addOnSuccessListener { Log.d("document", "User info created") }
+    }
 
     override fun loginWithEmailAndPassword(
         email: String,
@@ -73,8 +89,13 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 val result = if (task.isSuccessful) {
+                    val user = task.result.user
+
                     Log.d("login", "google sign in success")
-                    Resource.Success<FirebaseUser>(task.result.user)
+
+                    createUser(user!!)
+
+                    Resource.Success<FirebaseUser>(user)
                 } else {
                     Log.d("login", "google sign in failed")
                     Resource.Error<FirebaseUser>(task.exception!!)

@@ -16,6 +16,5 @@ val Magenta30 = Color(0xff31111D)
 
 val LightGrey90 = Color(0xfff0f0f0)
 
-val DarkGreen10 = Color(0XCC004445)
-val DarkGreen90 = Color(0xff145e5c)
-val DarkGreen20 = Color(0xCC145e5c)
+val DarkGreen10 = Color(0Xff004445)
+val DarkGreen90 = Color(0xff135d5a)

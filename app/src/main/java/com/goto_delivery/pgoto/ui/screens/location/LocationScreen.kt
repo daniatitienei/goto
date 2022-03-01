@@ -1,13 +1,21 @@
 package com.goto_delivery.pgoto.ui.screens.location
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build.VERSION.SDK_INT
+import android.provider.Settings
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +32,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.location.LocationServices
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.UiEvent
@@ -59,6 +68,11 @@ fun TurnOnLocationScreen(
         )
     )
 
+    LaunchedEffect(key1 = locationPermissionsState.allPermissionsGranted) {
+        if (locationPermissionsState.allPermissionsGranted)
+            checkGpsStatus(context)
+    }
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -68,6 +82,7 @@ fun TurnOnLocationScreen(
                 is UiEvent.AlertDialog -> {
                     if (!locationPermissionsState.allPermissionsGranted)
                         locationPermissionsState.launchMultiplePermissionRequest()
+                    
                 }
                 else -> Unit
             }
@@ -152,6 +167,31 @@ fun TurnOnLocationScreen(
         }
 
     }
+}
+
+@SuppressLint("MissingPermission")
+private fun checkGpsStatus(context: Context) {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val gpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+    if (gpsStatus) {
+        Log.d("location", "gps on")
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                Log.d("location", location.toString())
+            }
+    } else {
+        Log.d("location", "gps off")
+        gpsStatus(context = context)
+    }
+}
+
+fun gpsStatus(context: Context) {
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+
+    context.startActivity(intent)
 }
 
 @ExperimentalPermissionsApi

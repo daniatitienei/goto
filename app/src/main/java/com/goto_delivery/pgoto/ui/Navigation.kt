@@ -23,7 +23,7 @@ import com.goto_delivery.pgoto.ui.utils.Screens
 fun Navigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screens.TurnOnLocation.route) {
+    NavHost(navController = navController, startDestination = Routes.AuthenticationGraph) {
         authenticationGraph(navController = navController)
 
         composable(route = Screens.TurnOnLocation.route) {
