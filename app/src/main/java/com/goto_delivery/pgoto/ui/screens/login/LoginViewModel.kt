@@ -7,9 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.common.api.Response
-import com.google.firebase.auth.AuthResult
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.goto_delivery.pgoto.R
@@ -29,21 +26,6 @@ class LoginViewModel @Inject constructor(
     private val application: Application,
     private val useCases: AuthenticationUseCases
 ) : ViewModel() {
-    sealed class LoginEvents {
-        data class OnValidate(
-            val email: String,
-            val password: String,
-        ) : LoginEvents()
-
-        data class OnNavigate(
-            val route: String,
-            val popUpTo: UiEvent.Navigate.PopUpTo? = null
-        ) : LoginEvents()
-
-        data class OnContinueWithGoogle(val account: GoogleSignInAccount?) : LoginEvents()
-        object OnContinueWithFacebook : LoginEvents()
-    }
-
     private var _emailError = mutableStateOf<String?>(null)
     val emailError: State<String?> = _emailError
 

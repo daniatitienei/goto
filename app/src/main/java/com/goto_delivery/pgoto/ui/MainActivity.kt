@@ -8,10 +8,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+@ExperimentalPermissionsApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @AndroidEntryPoint

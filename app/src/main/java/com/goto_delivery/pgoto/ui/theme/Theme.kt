@@ -12,30 +12,41 @@ fun GotoTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
     MaterialTheme(
         content = content,
         typography = GotoTypography,
-        colorScheme = if (isDarkTheme) darkColorScheme else lightColorScheme,
+        colorScheme = if (isDarkTheme) DarkThemeColors else LightThemeColors,
     )
 }
 
-private val lightColorScheme = lightColorScheme(
-    primary = Lime900,
-    onPrimary = Color.Black,
-    primaryContainer = LightGrey900,
+private val LightThemeColors = lightColorScheme(
+    primary = Lime80,
+    onPrimary = Color.White,
+    primaryContainer = LightGrey90,
     onPrimaryContainer = Color.Black,
-    secondary = Lime700,
+    secondary = Lime80,
     onSecondary = Color.White,
-    onSurface = LightGrey900,
     surface = Color.White,
+    onSurface = Lime80,
+    onBackground = Lime80,
+    tertiary = Magenta80,
+    onTertiary = Magenta20,
+    tertiaryContainer = Magenta30,
+    error = Red80,
+    errorContainer = Red20,
 )
 
-private val darkColorScheme = darkColorScheme(
-    primary = Lime900,
-    onPrimary = DarkGreen900,
-    primaryContainer = DarkGreen700,
+private val DarkThemeColors = darkColorScheme(
+    primary = Lime80,
+    onPrimary = DarkGreen10,
+    primaryContainer = DarkGreen90,
     onPrimaryContainer = Color.White,
-    secondary = Lime700,
-    onSecondary = DarkGreen700,
-    background = DarkGreen900,
-    onBackground = Lime900,
-    onSurface = DarkGreen600,
-    surface = DarkGreen900,
+    secondary = Lime80,
+    onSecondary = DarkGreen10,
+    background = DarkGreen10,
+    onBackground = Lime80,
+    onSurface = Lime80,
+    surface = DarkGreen10,
+    tertiary = Magenta80,
+    onTertiary = Magenta20,
+    tertiaryContainer = Magenta30,
+    error = Red80,
+    errorContainer = Red20,
 )

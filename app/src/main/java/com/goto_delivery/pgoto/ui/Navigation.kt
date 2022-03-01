@@ -9,11 +9,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
 import com.goto_delivery.pgoto.ui.utils.Routes
 import com.goto_delivery.pgoto.ui.utils.Screens
 
+@ExperimentalPermissionsApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @Composable
@@ -22,6 +25,16 @@ fun Navigation() {
 
     NavHost(navController = navController, startDestination = Routes.AuthenticationGraph) {
         authenticationGraph(navController = navController)
+
+        composable(route = Screens.TurnOnLocation.route) {
+            TurnOnLocationScreen(
+                onNavigate = { destination ->
+                    navController.navigate(destination.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
     }
 }
 

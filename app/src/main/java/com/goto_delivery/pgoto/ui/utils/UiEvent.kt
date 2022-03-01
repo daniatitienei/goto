@@ -8,6 +8,8 @@ sealed class UiEvent {
         )
     }
 
+    object AlertDialog : UiEvent()
+
     object PopBackStack : UiEvent()
 
     data class Toast(val message: String) : UiEvent()

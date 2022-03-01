@@ -5,7 +5,7 @@ import com.goto_delivery.pgoto.ui.utils.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface FirebaseAuthenticationRepository {
-    fun registerWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
+    fun registerWithEmailAndPassword(email: String, password: String, name: String): Flow<Resource<FirebaseUser>>
     fun loginWithEmailAndPassword(email: String, password: String): Flow<Resource<FirebaseUser>>
 
     fun continueWithGoogle(idToken: String): Flow<Resource<FirebaseUser>>

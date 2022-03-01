@@ -53,7 +53,11 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:29.1.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    /* GMS */
     implementation 'com.google.android.gms:play-services-auth:20.1.0'
+    implementation 'com.google.android.gms:play-services-location:19.0.1'
 
     /* Dagger Hilt */
     def hiltVersion = "2.40.1"
@@ -79,13 +83,18 @@ dependencies {
     /* Layout */
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
 
+    /* Coil */
+    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation("io.coil-kt:coil-gif:1.4.0")
+
     /* Accompanist */
-    def accompanistVersion = "0.21.2-beta"
+    def accompanistVersion = "0.24.3-alpha"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanistVersion"
     implementation "com.google.accompanist:accompanist-placeholder-material:$accompanistVersion"
     implementation "com.google.accompanist:accompanist-insets:$accompanistVersion"
     implementation "com.google.accompanist:accompanist-insets-ui:$accompanistVersion"
+    implementation "com.google.accompanist:accompanist-permissions:$accompanistVersion"
 
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
     implementation 'androidx.core:core-ktx:1.7.0'
