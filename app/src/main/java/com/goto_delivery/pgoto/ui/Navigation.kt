@@ -1,5 +1,6 @@
 package com.goto_delivery.pgoto.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -13,9 +14,11 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
+import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
 import com.goto_delivery.pgoto.ui.utils.Routes
 import com.goto_delivery.pgoto.ui.utils.Screens
 
+@ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
@@ -23,7 +26,7 @@ import com.goto_delivery.pgoto.ui.utils.Screens
 fun Navigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Routes.AuthenticationGraph) {
+    NavHost(navController = navController, startDestination = Screens.RestaurantList.route) {
         authenticationGraph(navController = navController)
 
         composable(route = Screens.TurnOnLocation.route) {
@@ -34,6 +37,10 @@ fun Navigation() {
                     }
                 }
             )
+        }
+
+        composable(route = Screens.RestaurantList.route) {
+            RestaurantListScreen()
         }
     }
 }

@@ -4,8 +4,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.goto_delivery.pgoto.data.repository.FirebaseAuthenticationRepositoryImpl
 import com.goto_delivery.pgoto.data.repository.AccountRepositoryImpl
+import com.goto_delivery.pgoto.data.repository.RestaurantRepositoryImpl
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
 import com.goto_delivery.pgoto.domain.repository.AccountRepository
+import com.goto_delivery.pgoto.domain.repository.RestaurantRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,4 +34,10 @@ object RepositoryModule {
         auth: FirebaseAuth,
         firestore: FirebaseFirestore
     ): AccountRepository = AccountRepositoryImpl(auth = auth, firestore = firestore)
+
+    @Provides
+    @Singleton
+    fun provideRestaurantRepository(
+        firestore: FirebaseFirestore
+    ): RestaurantRepository = RestaurantRepositoryImpl(firestore = firestore)
 }
