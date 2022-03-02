@@ -77,7 +77,7 @@ fun TurnOnLocationScreen(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = true) {
+    LaunchedEffect(key1 = locationPermissionsState.allPermissionsGranted) {
         if (locationPermissionsState.allPermissionsGranted) {
             checkGpsStatus(
                 context = context,
@@ -275,7 +275,7 @@ private fun checkGpsStatus(
     }
 }
 
-fun locationIntent(context: Context) {
+private fun locationIntent(context: Context) {
     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     context.startActivity(intent)
