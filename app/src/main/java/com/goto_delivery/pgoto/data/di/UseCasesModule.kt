@@ -7,6 +7,7 @@ import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseC
 import com.goto_delivery.pgoto.domain.use_case.authentication.GoogleAuthenticationUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.LoginUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
+import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurantById
 import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurants
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.domain.use_case.user.AccountUseCases
@@ -41,6 +42,7 @@ object UseCasesModule {
     @Singleton
     fun provideRestaurantUseCases(repository: RestaurantRepository) =
         RestaurantUseCases(
-            getRestaurants = GetRestaurants(repository = repository)
+            getRestaurants = GetRestaurants(repository = repository),
+            getRestaurantById = GetRestaurantById(repository = repository)
         )
 }

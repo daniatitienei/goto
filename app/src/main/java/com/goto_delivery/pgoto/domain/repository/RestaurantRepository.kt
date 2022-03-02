@@ -8,5 +8,5 @@ interface RestaurantRepository {
 
     fun getRestaurants(): Flow<Resource<List<Restaurant>>>
 
-    fun getRestaurantById(): Flow<Resource<Restaurant>>
+    fun getRestaurantById(id: Int): Flow<Resource<Restaurant>>
 }

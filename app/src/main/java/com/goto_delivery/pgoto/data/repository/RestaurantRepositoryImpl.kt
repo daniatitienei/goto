@@ -1,6 +1,7 @@
 package com.goto_delivery.pgoto.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.firestore.ktx.toObjects
 import com.goto_delivery.pgoto.domain.model.Restaurant
 import com.goto_delivery.pgoto.domain.repository.RestaurantRepository
@@ -35,7 +36,24 @@ class RestaurantRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getRestaurantById(): Flow<Resource<Restaurant>> {
-        TODO("Not yet implemented")
+    override fun getRestaurantById(id: Int): Flow<Resource<Restaurant>> = callbackFlow {
+
+        trySend(Resource.Loading<Restaurant>())
+
+        firestore.collection("restaurants")
+            .whereEqualTo("id", id)
+            .get()
+            .addOnCompleteListener { task ->
+                val result = if (task.isSuccessful) {
+                    val restaurant = task.result.documents[0].toObject<Restaurant>()
+
+                    Resource.Success<Restaurant>(data = restaurant)
+                } else
+                    Resource.Error<Restaurant>(exception = task.exception!!)
+
+                trySend(result).isSuccess
+            }
+
+        awaitClose { close() }
     }
 }
