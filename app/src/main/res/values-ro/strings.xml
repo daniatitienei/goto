@@ -29,4 +29,8 @@
     <string name="we_recommend_that">Va recomandam sa folositi</string>
     <string name="the_location">locatia</string>
     <string name="for_faster_results">pentru rezultate rapide</string>
+    <string name="turn_it_on_to_use_this_functionality">Porniti-o pentru a folosi aceasta functionalitate</string>
+    <string name="location_is_disabled">Locatia este dezactivata</string>
+    <string name="ok">Bine</string>
+    <string name="cancel">Anuleaza</string>
 </resources>

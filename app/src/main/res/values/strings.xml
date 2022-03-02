@@ -30,4 +30,8 @@
     <string name="we_recommend_that">We recommend that you use</string>
     <string name="the_location">the location</string>
     <string name="for_faster_results">for faster results</string>
+    <string name="turn_it_on_to_use_this_functionality">Turn it on to use this functionality</string>
+    <string name="location_is_disabled">Location is disabled</string>
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
 </resources>

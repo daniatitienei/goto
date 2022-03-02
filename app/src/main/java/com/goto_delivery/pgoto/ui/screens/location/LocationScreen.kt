@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build.VERSION.SDK_INT
@@ -12,13 +13,14 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.LocationOff
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -26,12 +28,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.ImageLoader
 import coil.compose.rememberImagePainter
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.*
 import com.google.android.gms.location.LocationServices
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
@@ -39,12 +43,13 @@ import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.WindowInfo
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import kotlinx.coroutines.flow.collect
+import java.util.*
 
 @ExperimentalPermissionsApi
 @ExperimentalMaterial3Api
 @Composable
 fun TurnOnLocationScreen(
-    viewModel: LocationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: LocationViewModel = hiltViewModel(),
     onNavigate: (UiEvent.Navigate) -> Unit
 ) {
     val context = LocalContext.current
@@ -68,9 +73,29 @@ fun TurnOnLocationScreen(
         )
     )
 
-    LaunchedEffect(key1 = locationPermissionsState.allPermissionsGranted) {
-        if (locationPermissionsState.allPermissionsGranted)
-            checkGpsStatus(context)
+    var isTurnOnLocationDialogOpen by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = true) {
+        if (locationPermissionsState.allPermissionsGranted) {
+            checkGpsStatus(
+                context = context,
+                onDisabled = {
+                    viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
+                },
+                onSuccess = { location ->
+                    val longitude = location.longitude
+                    val latitude = location.latitude
+
+                    val newAddress = getCurrentAddress(context, latitude, longitude)
+
+                    viewModel.onEvent(
+                        LocationEvents.OnUpdateAddress(newAddress = newAddress)
+                    )
+                }
+            )
+        }
     }
 
     LaunchedEffect(key1 = true) {
@@ -80,14 +105,50 @@ fun TurnOnLocationScreen(
                     onNavigate(event)
                 }
                 is UiEvent.AlertDialog -> {
-                    if (!locationPermissionsState.allPermissionsGranted)
-                        locationPermissionsState.launchMultiplePermissionRequest()
-                    
+                    isTurnOnLocationDialogOpen = !isTurnOnLocationDialogOpen
+                }
+                is UiEvent.RequestPermissionDialog -> {
+                    locationPermissionsState.launchMultiplePermissionRequest()
                 }
                 else -> Unit
             }
         }
     }
+
+    if (isTurnOnLocationDialogOpen)
+        AlertDialog(
+            title = {
+                Text(text = stringResource(id = R.string.location_is_disabled))
+            },
+            icon = {
+                Icon(imageVector = Icons.Rounded.LocationOff, contentDescription = null)
+            },
+            text = {
+                Text(text = stringResource(id = R.string.turn_it_on_to_use_this_functionality))
+            },
+            onDismissRequest = {
+                viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
+                        locationIntent(context = context)
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
 
     Scaffold(
         topBar = {
@@ -130,7 +191,28 @@ fun TurnOnLocationScreen(
                 }
 
                 Button(
-                    onClick = { viewModel.onEvent(LocationEvents.OnRequestPermission) }
+                    onClick = {
+                        if (!locationPermissionsState.allPermissionsGranted)
+                            viewModel.onEvent(LocationEvents.OnRequestPermission)
+                        else {
+                            checkGpsStatus(
+                                context = context,
+                                onDisabled = {
+                                    viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
+                                },
+                                onSuccess = { location ->
+                                    val longitude = location.longitude
+                                    val latitude = location.latitude
+
+                                    val newAddress = getCurrentAddress(context, latitude, longitude)
+
+                                    viewModel.onEvent(
+                                        LocationEvents.OnUpdateAddress(newAddress = newAddress)
+                                    )
+                                }
+                            )
+                        }
+                    }
                 ) {
                     Text(text = stringResource(id = R.string.use_location))
                 }
@@ -170,7 +252,11 @@ fun TurnOnLocationScreen(
 }
 
 @SuppressLint("MissingPermission")
-private fun checkGpsStatus(context: Context) {
+private fun checkGpsStatus(
+    context: Context,
+    onDisabled: () -> Unit,
+    onSuccess: (Location) -> Unit
+) {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     val gpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
@@ -180,18 +266,30 @@ private fun checkGpsStatus(context: Context) {
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
-                Log.d("location", location.toString())
+                onSuccess(location!!)
             }
     } else {
         Log.d("location", "gps off")
-        gpsStatus(context = context)
+
+        onDisabled()
     }
 }
 
-fun gpsStatus(context: Context) {
+fun locationIntent(context: Context) {
     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     context.startActivity(intent)
+}
+
+private fun getCurrentAddress(
+    context: Context,
+    latitude: Double,
+    longitude: Double
+): String {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
+    return addresses[0].getAddressLine(0)
 }
 
 @ExperimentalPermissionsApi

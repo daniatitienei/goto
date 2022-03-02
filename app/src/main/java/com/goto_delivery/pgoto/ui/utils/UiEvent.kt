@@ -9,6 +9,7 @@ sealed class UiEvent {
     }
 
     object AlertDialog : UiEvent()
+    object RequestPermissionDialog : UiEvent()
 
     object PopBackStack : UiEvent()
 

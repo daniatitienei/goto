@@ -1,10 +1,13 @@
 package com.goto_delivery.pgoto.data.di
 
 import com.goto_delivery.pgoto.domain.repository.FirebaseAuthenticationRepository
+import com.goto_delivery.pgoto.domain.repository.AccountRepository
 import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
 import com.goto_delivery.pgoto.domain.use_case.authentication.GoogleAuthenticationUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.LoginUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
+import com.goto_delivery.pgoto.domain.use_case.user.AccountUseCases
+import com.goto_delivery.pgoto.domain.use_case.user.UpdateAddressUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,4 +27,10 @@ object UseCasesModule {
             continueWithGoogle = GoogleAuthenticationUseCase(repository = repository)
         )
 
+    @Provides
+    @Singleton
+    fun provideAccountUseCases(repository: AccountRepository) =
+        AccountUseCases(
+            updateAddress = UpdateAddressUseCase(repository = repository)
+        )
 }
