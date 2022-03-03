@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.SideEffect
@@ -14,6 +15,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalComposeUiApi

@@ -1,6 +1,5 @@
 package com.goto_delivery.pgoto.ui.screens.restaurants
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Chip
-import androidx.compose.material.ChipColors
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.*
@@ -32,18 +30,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
-import com.google.firebase.firestore.FirebaseFirestore
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.data.repository.RestaurantRepositoryImpl
 import com.goto_delivery.pgoto.domain.model.Restaurant
-import com.goto_delivery.pgoto.domain.repository.RestaurantRepository
-import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurantById
-import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurants
-import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
-import com.goto_delivery.pgoto.ui.theme.Lime80
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
+import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
@@ -226,21 +218,45 @@ private fun RestaurantCard(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                /* Estimated delivery time */
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_time),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = restaurant.estimatedDeliveryTime,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    /* Estimated delivery time */
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_time),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = restaurant.estimatedDeliveryTime,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentWidth(align = Alignment.End)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_courier),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = restaurant.deliveryFee.twoDecimals() + " " + restaurant.currency,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

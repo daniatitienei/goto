@@ -9,5 +9,6 @@ data class Restaurant(
     val rating: Double = 0.0,
     val currency: String = "",
     val deliveryFee: Double = 0.0,
+    val categories: List<String> = emptyList(),
     val menu: List<MenuCategory> = emptyList()
 )

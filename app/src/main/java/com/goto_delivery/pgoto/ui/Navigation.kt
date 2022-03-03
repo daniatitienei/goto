@@ -1,6 +1,7 @@
 package com.goto_delivery.pgoto.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -18,6 +19,7 @@ import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
 import com.goto_delivery.pgoto.ui.utils.Routes
 import com.goto_delivery.pgoto.ui.utils.Screens
 
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @ExperimentalPermissionsApi
 @ExperimentalComposeUiApi

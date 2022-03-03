@@ -68,7 +68,7 @@ fun SearchBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     AnimatedVisibility(
                         visible = value.isNotEmpty(),
@@ -96,7 +96,7 @@ fun SearchBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
                     text = placeholder,
