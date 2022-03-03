@@ -1,6 +1,7 @@
 package com.goto_delivery.pgoto.ui.screens.restaurants
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -8,26 +9,43 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Chip
+import androidx.compose.material.ChipColors
+import androidx.compose.material.ChipDefaults
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
+import com.google.firebase.firestore.FirebaseFirestore
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.data.repository.RestaurantRepositoryImpl
 import com.goto_delivery.pgoto.domain.model.Restaurant
+import com.goto_delivery.pgoto.domain.repository.RestaurantRepository
+import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurantById
+import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurants
+import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
+import com.goto_delivery.pgoto.ui.theme.Lime80
+import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @ExperimentalMaterial3Api
 @Composable
@@ -39,10 +57,23 @@ fun RestaurantListScreen(
 
     val windowInfo = rememberWindowInfo()
 
+    var searchBarValue by remember {
+        mutableStateOf("")
+    }
+
     Scaffold(
         topBar = {
             SmallTopAppBar(
-                title = { /*TODO*/ },
+                title = {
+                    SearchBar(
+                        value = searchBarValue,
+                        onValueChange = { searchBarValue = it },
+                        placeholder = stringResource(
+                            id = R.string.search_restaurants
+                        ),
+                        onSearch = { /*TODO*/ }
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(
@@ -52,25 +83,88 @@ fun RestaurantListScreen(
                             modifier = Modifier.size(24.dp)
                         )
                     }
-                }
+                },
             )
         }
-    ) {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 15.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(top = 5.dp)
         ) {
-            items(if (!state.isLoading) state.restaurants else emptyList()) { restaurant ->
-                RestaurantCard(
-                    windowHeightDp = windowInfo.screenHeightDp,
-                    restaurant = restaurant,
-                    modifier = Modifier.animateItemPlacement(
-                        animationSpec = tween(500)
-                    ),
-                    onClick = { /*TODO*/ }
-                )
+            LazyRow(
+                contentPadding = PaddingValues(
+                    horizontal = 20.dp,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+                items(7) {
+                    var isSelected by remember {
+                        mutableStateOf(false)
+                    }
+                    FilterChip(
+                        text = "PIZZA",
+                        isSelected = isSelected,
+                        onClick = {
+                            isSelected = !isSelected
+                        }
+                    )
+                }
+            }
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    horizontal = 20.dp,
+                    vertical = 15.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+                items(if (!state.isLoading) state.restaurants else emptyList()) { restaurant ->
+                    RestaurantCard(
+                        windowHeightDp = windowInfo.screenHeightDp,
+                        restaurant = restaurant,
+                        modifier = Modifier.animateItemPlacement(
+                            animationSpec = tween(500)
+                        ),
+                        onClick = { /*TODO*/ }
+                    )
+                }
             }
         }
+
+    }
+}
+
+@ExperimentalMaterialApi
+@Composable
+fun FilterChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.primaryContainer
+    )
+
+    Chip(
+        onClick = onClick,
+        colors = ChipDefaults.chipColors(
+            backgroundColor = backgroundColor
+        )
+    ) {
+        Text(
+            text = text.toUpperCase(locale = Locale.current),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+@ExperimentalMaterialApi
+@Preview
+@Composable
+private fun FilterChipPreview() {
+    GotoTheme {
+        FilterChip(onClick = {}, isSelected = true, text = "PIZZA")
     }
 }
 
@@ -173,25 +267,5 @@ private fun RestaurantCard(
                 )
             }
         }
-    }
-}
-
-@ExperimentalFoundationApi
-@ExperimentalMaterial3Api
-@Preview(showBackground = true)
-@Composable
-private fun RestaurantListPreviewLight() {
-    GotoTheme {
-        RestaurantListScreen()
-    }
-}
-
-@ExperimentalFoundationApi
-@ExperimentalMaterial3Api
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun RestaurantListPreviewDark() {
-    GotoTheme {
-        RestaurantListScreen()
     }
 }
