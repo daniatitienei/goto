@@ -34,4 +34,5 @@
     <string name="ok">Bine</string>
     <string name="cancel">Anuleaza</string>
     <string name="search_restaurants">Cauta restaurante</string>
+    <string name="show_all">Afiseaza toate</string>
 </resources>

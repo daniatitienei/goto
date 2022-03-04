@@ -77,6 +77,9 @@ fun RestaurantListScreen(
                     }
                 },
             )
+        },
+        bottomBar = {
+
         }
     ) { innerPadding ->
         Column(
@@ -100,6 +103,13 @@ fun RestaurantListScreen(
                         onClick = {
                             isSelected = !isSelected
                         }
+                    )
+                }
+                item {
+                    FilterChip(
+                        text = stringResource(id = R.string.show_all),
+                        isSelected = true,
+                        onClick = { /*TODO*/ }
                     )
                 }
             }
