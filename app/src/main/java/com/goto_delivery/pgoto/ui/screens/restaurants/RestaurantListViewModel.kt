@@ -4,8 +4,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
-import com.goto_delivery.pgoto.domain.use_case.authentication.GoogleAuthenticationUseCase
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.domain.use_case.user.AccountUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
@@ -41,6 +39,19 @@ class RestaurantListViewModel @Inject constructor(
             }
             is RestaurantListEvents.OnSelectCategory -> {
 
+            }
+            is RestaurantListEvents.OnFilterByCategory -> {
+                _state.value = _state.value.copy(
+                    filteredResults = _state.value.restaurants
+                        .filter { restaurant ->
+                            restaurant.categories.contains(event.category)
+                        }
+                )
+            }
+            is RestaurantListEvents.OnClearFilter -> {
+                _state.value = _state.value.copy(
+                    filteredResults = emptyList()
+                )
             }
         }
     }

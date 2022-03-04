@@ -44,13 +44,16 @@ import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
 fun RestaurantListScreen(
     viewModel: RestaurantListViewModel = hiltViewModel()
 ) {
-
     val state = viewModel.state.value
 
     val windowInfo = rememberWindowInfo()
 
     var searchBarValue by remember {
         mutableStateOf("")
+    }
+
+    var selectedFoodCategory by remember {
+        mutableStateOf<Int?>(null)
     }
 
     Scaffold(
@@ -80,9 +83,7 @@ fun RestaurantListScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(top = 5.dp)
+            modifier = Modifier.padding(innerPadding)
         ) {
             LazyRow(
                 contentPadding = PaddingValues(
@@ -90,15 +91,25 @@ fun RestaurantListScreen(
                 ),
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                items(state.foodCategories) { category ->
-                    var isSelected by remember {
-                        mutableStateOf(false)
-                    }
+                items(state.foodCategories.size) { index ->
+                    val isSelected = selectedFoodCategory == index
                     FilterChip(
-                        text = category,
+                        text = state.foodCategories[index],
                         isSelected = isSelected,
                         onClick = {
-                            isSelected = !isSelected
+                            if (!isSelected) {
+                                selectedFoodCategory = index
+                                viewModel.onEvent(
+                                    RestaurantListEvents.OnFilterByCategory(
+                                        category = state.foodCategories[index]
+                                    )
+                                )
+                            } else {
+                                selectedFoodCategory = null
+                                viewModel.onEvent(
+                                    RestaurantListEvents.OnClearFilter
+                                )
+                            }
                         }
                     )
                 }
@@ -117,7 +128,7 @@ fun RestaurantListScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                items(if (!state.isLoading) state.restaurants else emptyList()) { restaurant ->
+                items(if (!state.isLoading && state.filteredResults.isEmpty()) state.restaurants else state.filteredResults) { restaurant ->
                     RestaurantCard(
                         windowHeightDp = windowInfo.screenHeightDp,
                         restaurant = restaurant,
