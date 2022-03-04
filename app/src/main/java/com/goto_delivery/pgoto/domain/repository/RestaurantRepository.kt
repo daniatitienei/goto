@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface RestaurantRepository {
 
-    fun getRestaurants(): Flow<Resource<List<Restaurant>>>
+    fun getRestaurants(city: String): Flow<Resource<List<Restaurant>>>
 
     fun getRestaurantById(id: Int): Flow<Resource<Restaurant>>
+
+    fun getFoodCategories(city: String): Flow<Resource<List<String>>>
 }

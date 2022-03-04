@@ -3,8 +3,8 @@ package com.goto_delivery.pgoto.domain.use_case.restaurant
 import com.goto_delivery.pgoto.domain.repository.RestaurantRepository
 import javax.inject.Inject
 
-class GetRestaurants @Inject constructor(
+class GetFoodCategories @Inject constructor(
     private val repository: RestaurantRepository
 ) {
-    operator fun invoke(city: String) = repository.getRestaurants(city)
+    operator fun invoke(city: String) = repository.getFoodCategories(city)
 }

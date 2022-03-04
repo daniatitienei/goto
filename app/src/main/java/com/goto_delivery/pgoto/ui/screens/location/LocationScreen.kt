@@ -39,6 +39,7 @@ import com.google.accompanist.permissions.*
 import com.google.android.gms.location.LocationServices
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
+import com.goto_delivery.pgoto.ui.utils.Screens
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.WindowInfo
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
@@ -89,9 +90,10 @@ fun TurnOnLocationScreen(
                     val latitude = location.latitude
 
                     val newAddress = getCurrentAddress(context, latitude, longitude)
+                    val city = getCurrentCity(context, latitude, longitude)
 
                     viewModel.onEvent(
-                        LocationEvents.OnUpdateAddress(newAddress = newAddress)
+                        LocationEvents.OnUpdateAddress(newAddress = newAddress, city = city)
                     )
                 }
             )
@@ -205,9 +207,22 @@ fun TurnOnLocationScreen(
                                     val latitude = location.latitude
 
                                     val newAddress = getCurrentAddress(context, latitude, longitude)
+                                    val city = getCurrentCity(context, latitude, longitude)
 
                                     viewModel.onEvent(
-                                        LocationEvents.OnUpdateAddress(newAddress = newAddress)
+                                        LocationEvents.OnUpdateAddress(
+                                            newAddress = newAddress,
+                                            city = city
+                                        )
+                                    )
+                                    viewModel.onEvent(
+                                        LocationEvents.OnNavigate(
+                                            route = Screens.RestaurantList.route,
+                                            popUpTo = UiEvent.Navigate.PopUpTo(
+                                                route = Screens.TurnOnLocation.route,
+                                                inclusive = true
+                                            )
+                                        )
                                     )
                                 }
                             )
@@ -290,6 +305,17 @@ private fun getCurrentAddress(
     val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
     return addresses[0].getAddressLine(0)
+}
+
+private fun getCurrentCity(
+    context: Context,
+    latitude: Double,
+    longitude: Double
+): String {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
+    return addresses[0].locality
 }
 
 @ExperimentalPermissionsApi

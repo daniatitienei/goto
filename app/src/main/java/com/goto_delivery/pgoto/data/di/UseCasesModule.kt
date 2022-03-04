@@ -7,10 +7,12 @@ import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseC
 import com.goto_delivery.pgoto.domain.use_case.authentication.GoogleAuthenticationUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.LoginUseCase
 import com.goto_delivery.pgoto.domain.use_case.authentication.RegisterUseCase
+import com.goto_delivery.pgoto.domain.use_case.restaurant.GetFoodCategories
 import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurantById
 import com.goto_delivery.pgoto.domain.use_case.restaurant.GetRestaurants
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.domain.use_case.user.AccountUseCases
+import com.goto_delivery.pgoto.domain.use_case.user.GetAccountInfo
 import com.goto_delivery.pgoto.domain.use_case.user.UpdateAddressUseCase
 import dagger.Module
 import dagger.Provides
@@ -35,7 +37,8 @@ object UseCasesModule {
     @Singleton
     fun provideAccountUseCases(repository: AccountRepository) =
         AccountUseCases(
-            updateAddress = UpdateAddressUseCase(repository = repository)
+            updateAddress = UpdateAddressUseCase(repository = repository),
+            getAccountInfo = GetAccountInfo(repository = repository)
         )
 
     @Provides
@@ -43,6 +46,7 @@ object UseCasesModule {
     fun provideRestaurantUseCases(repository: RestaurantRepository) =
         RestaurantUseCases(
             getRestaurants = GetRestaurants(repository = repository),
-            getRestaurantById = GetRestaurantById(repository = repository)
+            getRestaurantById = GetRestaurantById(repository = repository),
+            getFoodCategories = GetFoodCategories(repository = repository)
         )
 }

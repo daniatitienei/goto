@@ -17,11 +17,12 @@ class RestaurantRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : RestaurantRepository {
 
-    override fun getRestaurants(): Flow<Resource<List<Restaurant>>> = callbackFlow {
+    override fun getRestaurants(city: String): Flow<Resource<List<Restaurant>>> = callbackFlow {
 
         trySend(Resource.Loading<List<Restaurant>>())
 
         val listener = firestore.collection("restaurants")
+            .whereEqualTo("city", city)
             .addSnapshotListener { snapshot, error ->
                 val result = if (error == null)
                     Resource.Success<List<Restaurant>>(data = snapshot?.toObjects() ?: emptyList())
@@ -55,5 +56,30 @@ class RestaurantRepositoryImpl @Inject constructor(
             }
 
         awaitClose { close() }
+    }
+
+    override fun getFoodCategories(city: String): Flow<Resource<List<String>>> = callbackFlow {
+        val listener = firestore.collection("restaurants")
+            .whereEqualTo("city", city)
+            .addSnapshotListener { snapshot, error ->
+                val result = if (error == null) {
+                    val categories: MutableSet<String> = mutableSetOf()
+
+                    snapshot?.documents?.forEach { document ->
+                        val documentCategories = document["categories"] as List<String>
+
+                        categories.addAll(documentCategories)
+                    }
+
+                    Resource.Success<List<String>>(data = categories.toList())
+                } else
+                    Resource.Error<List<String>>(exception = error)
+
+                trySend(result).isSuccess
+            }
+
+        awaitClose {
+            listener.remove()
+        }
     }
 }

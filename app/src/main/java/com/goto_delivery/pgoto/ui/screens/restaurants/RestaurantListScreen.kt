@@ -78,9 +78,6 @@ fun RestaurantListScreen(
                 },
             )
         },
-        bottomBar = {
-
-        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -93,12 +90,12 @@ fun RestaurantListScreen(
                 ),
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                items(7) {
+                items(state.foodCategories) { category ->
                     var isSelected by remember {
                         mutableStateOf(false)
                     }
                     FilterChip(
-                        text = "PIZZA",
+                        text = category,
                         isSelected = isSelected,
                         onClick = {
                             isSelected = !isSelected
