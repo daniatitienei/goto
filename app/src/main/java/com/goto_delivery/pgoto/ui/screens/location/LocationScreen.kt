@@ -20,7 +20,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,8 +28,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import coil.ImageLoader
 import coil.compose.rememberImagePainter
 import coil.decode.GifDecoder
@@ -39,7 +36,7 @@ import com.google.accompanist.permissions.*
 import com.google.android.gms.location.LocationServices
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
-import com.goto_delivery.pgoto.ui.utils.Screens
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.WindowInfo
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
@@ -217,9 +214,9 @@ fun TurnOnLocationScreen(
                                     )
                                     viewModel.onEvent(
                                         LocationEvents.OnNavigate(
-                                            route = Screens.RestaurantList.route,
+                                            route = Screen.RestaurantList.route,
                                             popUpTo = UiEvent.Navigate.PopUpTo(
-                                                route = Screens.TurnOnLocation.route,
+                                                route = Screen.TurnOnLocation.route,
                                                 inclusive = true
                                             )
                                         )

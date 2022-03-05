@@ -11,9 +11,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Chip
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FilterChip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
@@ -31,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.data.core.test_tags.TestTags
 import com.goto_delivery.pgoto.domain.model.Restaurant
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
@@ -93,9 +94,10 @@ fun RestaurantListScreen(
             ) {
                 items(state.foodCategories.size) { index ->
                     val isSelected = selectedFoodCategory == index
-                    FilterChip(
+                    FoodFilterChip(
                         text = state.foodCategories[index],
                         isSelected = isSelected,
+                        modifier = Modifier.testTag(TestTags.FILTER_CHIP),
                         onClick = {
                             if (!isSelected) {
                                 selectedFoodCategory = index
@@ -114,7 +116,7 @@ fun RestaurantListScreen(
                     )
                 }
                 item {
-                    FilterChip(
+                    FoodFilterChip(
                         text = stringResource(id = R.string.show_all),
                         isSelected = true,
                         onClick = { /*TODO*/ }
@@ -141,40 +143,6 @@ fun RestaurantListScreen(
             }
         }
 
-    }
-}
-
-@ExperimentalMaterialApi
-@Composable
-fun FilterChip(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.primaryContainer
-    )
-
-    Chip(
-        onClick = onClick,
-        colors = ChipDefaults.chipColors(
-            backgroundColor = backgroundColor
-        )
-    ) {
-        Text(
-            text = text.toUpperCase(locale = Locale.current),
-            color = MaterialTheme.colorScheme.onPrimary
-        )
-    }
-}
-
-@ExperimentalMaterialApi
-@Preview
-@Composable
-private fun FilterChipPreview() {
-    GotoTheme {
-        FilterChip(onClick = {}, isSelected = true, text = "PIZZA")
     }
 }
 
@@ -301,5 +269,33 @@ private fun RestaurantCard(
                 )
             }
         }
+    }
+}
+
+@ExperimentalMaterialApi
+@Composable
+fun FoodFilterChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.primaryContainer
+    )
+
+    FilterChip(
+        selected = isSelected,
+        onClick = onClick,
+        colors = ChipDefaults.filterChipColors(
+            backgroundColor = backgroundColor
+        ),
+        modifier = modifier
+    ) {
+        Text(
+            text = text.toUpperCase(locale = Locale.current),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }

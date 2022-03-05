@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.ui.utils.Screens
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.authentication.google.googleSignInActivityResult
 import com.goto_delivery.pgoto.ui.utils.components.GotoTextField
@@ -229,8 +229,8 @@ fun RegisterScreen(
                         onClick = {
                             viewModel.onEvent(
                                 RegisterEvents.OnNavigate(
-                                    route = Screens.Login.route, popUpTo = UiEvent.Navigate.PopUpTo(
-                                        route = Screens.Register.route,
+                                    route = Screen.Login.route, popUpTo = UiEvent.Navigate.PopUpTo(
+                                        route = Screen.Register.route,
                                         inclusive = true
                                     )
                                 )

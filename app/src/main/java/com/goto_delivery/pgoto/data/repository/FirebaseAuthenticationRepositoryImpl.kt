@@ -33,6 +33,7 @@ class FirebaseAuthenticationRepositoryImpl @Inject constructor(
                 val result = if (task.isSuccessful) {
                     val user = task.result.user
 
+                    createUser(user = user!!, name = name)
                     Resource.Success<FirebaseUser>(data = user)
                 } else {
                     Resource.Error<FirebaseUser>(exception = task.exception!!)
