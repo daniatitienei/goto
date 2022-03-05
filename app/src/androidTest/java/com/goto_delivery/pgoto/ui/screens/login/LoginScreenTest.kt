@@ -94,6 +94,7 @@ class LoginScreenTest {
 
         val context = ApplicationProvider.getApplicationContext<Context>()
 
-        composeRule.onNodeWithContentDescription(context.getString(R.string.google_authentication)).performClick()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.google_authentication))
+            .performClick()
     }
 }
