@@ -16,7 +16,7 @@ import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
 import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
-import com.goto_delivery.pgoto.ui.utils.Routes
+import com.goto_delivery.pgoto.ui.utils.Graphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 
 @ExperimentalMaterialApi
@@ -36,6 +36,12 @@ fun Navigation() {
                 onNavigate = { destination ->
                     navController.navigate(destination.route) {
                         launchSingleTop = true
+
+                        destination.popUpTo?.let { screen ->
+                            popUpTo(screen.route) {
+                                inclusive = screen.inclusive
+                            }
+                        }
                     }
                 }
             )
@@ -50,15 +56,15 @@ fun Navigation() {
 @ExperimentalMaterial3Api
 @ExperimentalComposeUiApi
 fun NavGraphBuilder.authenticationGraph(navController: NavController) {
-    navigation(startDestination = Screen.Register.route, route = Routes.AuthenticationGraph) {
+    navigation(startDestination = Screen.Register.route, route = Graphs.Authentication) {
         composable(Screen.Register.route) {
             RegisterScreen { destination ->
                 navController.navigate(destination.route) {
                     launchSingleTop = true
 
-                    destination.popUpTo?.let { popUpTo ->
-                        popUpTo(route = popUpTo.route) {
-                            inclusive = popUpTo.inclusive
+                    destination.popUpTo?.let { screen ->
+                        popUpTo(screen.route) {
+                            inclusive = screen.inclusive
                         }
                     }
                 }

@@ -107,7 +107,10 @@ fun RegisterScreen(
                     value = email,
                     onValueChange = { email = it },
                     leadingIcon = {
-                        Icon(Icons.Outlined.Email, contentDescription = null)
+                        Icon(
+                            Icons.Outlined.Email,
+                            contentDescription = stringResource(id = R.string.email)
+                        )
                     },
                     onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
                     placeholder = stringResource(id = R.string.email),
@@ -122,7 +125,10 @@ fun RegisterScreen(
                     placeholder = stringResource(id = R.string.name),
                     onImeAction = { focusManager.moveFocus(focusDirection = FocusDirection.Down) },
                     leadingIcon = {
-                        Icon(Icons.Outlined.Person, contentDescription = null)
+                        Icon(
+                            Icons.Outlined.Person,
+                            contentDescription = stringResource(id = R.string.name)
+                        )
                     },
                     textFieldType = TextFieldType.NAME,
                     capitalization = KeyboardCapitalization.Words,
@@ -141,7 +147,10 @@ fun RegisterScreen(
                     },
                     placeholder = stringResource(id = R.string.password),
                     leadingIcon = {
-                        Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = stringResource(id = R.string.password)
+                        )
                     },
                     trailingIcon = {
                         IconButton(
@@ -151,7 +160,10 @@ fun RegisterScreen(
                         ) {
                             Icon(
                                 if (isPasswordObscured) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                                contentDescription = null
+                                contentDescription = stringResource(
+                                    id = if (isPasswordObscured) R.string.password_obscured
+                                    else R.string.password_is_not_obscured
+                                )
                             )
                         }
                     },
@@ -206,12 +218,12 @@ fun RegisterScreen(
                             contentDescription = stringResource(id = R.string.google_authentication),
                             onClick = {
                                 googleAuthResultLauncher.launch(signInRequestCode)
-                            }
+                            },
                         )
 
                         ThirdPartyAuthenticationMethod(
                             imagePainter = painterResource(id = R.drawable.ic_facebook_logo),
-                            contentDescription = stringResource(id = R.string.google_authentication),
+                            contentDescription = stringResource(id = R.string.facebook_authentication),
                             onClick = {
                                 viewModel.onEvent(RegisterEvents.OnContinueWithFacebook)
                             }

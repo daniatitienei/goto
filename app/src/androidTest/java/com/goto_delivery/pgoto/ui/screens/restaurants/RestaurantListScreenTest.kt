@@ -16,7 +16,6 @@ import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Screen
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
-import com.goto_delivery.pgoto.ui.utils.Routes
+import com.goto_delivery.pgoto.ui.utils.Graphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -69,7 +69,7 @@ class RegisterViewModel @Inject constructor(
                                 sendEvent(
                                     UiEvent.Navigate(
                                         route = Screen.TurnOnLocation.route,
-                                        popUpTo = UiEvent.Navigate.PopUpTo(route = Routes.AuthenticationGraph, inclusive = true)
+                                        popUpTo = UiEvent.Navigate.PopUpTo(route = Graphs.Authentication, inclusive = true)
                                     )
                                 )
                             }
@@ -112,7 +112,7 @@ class RegisterViewModel @Inject constructor(
                                     sendEvent(
                                         UiEvent.Navigate(
                                             route = Screen.TurnOnLocation.route,
-                                            popUpTo = UiEvent.Navigate.PopUpTo(route = Routes.AuthenticationGraph, inclusive = true)
+                                            popUpTo = UiEvent.Navigate.PopUpTo(route = Graphs.Authentication, inclusive = true)
                                         )
                                     )
                                 }
