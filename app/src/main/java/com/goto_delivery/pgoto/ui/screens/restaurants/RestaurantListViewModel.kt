@@ -37,25 +37,22 @@ class RestaurantListViewModel @Inject constructor(
             is RestaurantListEvents.OnNavigate -> {
 
             }
-            is RestaurantListEvents.OnSelectCategory -> {
-
-            }
             is RestaurantListEvents.OnFilterByCategory -> {
                 _state.value = _state.value.copy(
-                    filteredResults = _state.value.restaurants
+                    filteredRestaurants = _state.value.restaurants
                         .filter { restaurant ->
                             restaurant.categories.contains(event.category)
                         }
                 )
             }
-            is RestaurantListEvents.OnClearFilter -> {
+            is RestaurantListEvents.OnClearRestaurantFilter -> {
                 _state.value = _state.value.copy(
-                    filteredResults = emptyList()
+                    filteredRestaurants = emptyList(),
                 )
             }
-            is RestaurantListEvents.OnFilterBySearch -> {
+            is RestaurantListEvents.OnFilterRestaurantBySearch -> {
                 _state.value = _state.value.copy(
-                    filteredResults = _state.value.restaurants
+                    filteredRestaurants = _state.value.restaurants
                         .filter {
                             it.name.contains(event.text, ignoreCase = true)
                         }
