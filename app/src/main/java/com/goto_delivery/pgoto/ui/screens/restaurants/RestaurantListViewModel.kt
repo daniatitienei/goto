@@ -53,6 +53,14 @@ class RestaurantListViewModel @Inject constructor(
                     filteredResults = emptyList()
                 )
             }
+            is RestaurantListEvents.OnFilterBySearch -> {
+                _state.value = _state.value.copy(
+                    filteredResults = _state.value.restaurants
+                        .filter {
+                            it.name.contains(event.text, ignoreCase = true)
+                        }
+                )
+            }
         }
     }
 
@@ -63,28 +71,29 @@ class RestaurantListViewModel @Inject constructor(
     }
 
     private fun getRestaurants() {
-        restaurantUseCases.getRestaurants(_state.value.account.city).onEach { resource ->
-            when (resource) {
-                is Resource.Success -> {
-                    _state.value = _state.value.copy(
-                        restaurants = resource.data!!,
-                        isLoading = false
-                    )
+        restaurantUseCases.getRestaurants(_state.value.account.city)
+            .onEach { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        _state.value = _state.value.copy(
+                            restaurants = resource.data!!,
+                            isLoading = false
+                        )
 
-                    getCategories()
+                        getCategories()
+                    }
+                    is Resource.Loading -> {
+                        _state.value = _state.value.copy(
+                            isLoading = true
+                        )
+                    }
+                    is Resource.Error -> {
+                        _state.value = _state.value.copy(
+                            error = resource.exception?.message
+                        )
+                    }
                 }
-                is Resource.Loading -> {
-                    _state.value = _state.value.copy(
-                        isLoading = true
-                    )
-                }
-                is Resource.Error -> {
-                    _state.value = _state.value.copy(
-                        error = resource.exception?.message
-                    )
-                }
-            }
-        }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
     private fun getAccount() {

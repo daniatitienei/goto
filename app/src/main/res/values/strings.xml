@@ -39,4 +39,5 @@
     <string name="password_obscured">Password is obscured</string>
     <string name="password_is_not_obscured">Password isn\'t obscured</string>
     <string name="facebook_authentication">Authenticate with Facebook</string>
+    <string name="clear_text">Clear text</string>
 </resources>

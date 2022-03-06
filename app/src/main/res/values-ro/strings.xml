@@ -38,4 +38,5 @@
     <string name="password_obscured">Parola nu se vede</string>
     <string name="password_is_not_obscured">Parola se vede</string>
     <string name="facebook_authentication">Contecteaza-te cu Facebook</string>
+    <string name="clear_text">Clear text</string>
 </resources>

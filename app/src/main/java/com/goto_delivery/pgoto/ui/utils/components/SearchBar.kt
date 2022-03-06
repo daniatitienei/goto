@@ -5,26 +5,30 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 
 @Composable
@@ -32,7 +36,8 @@ fun SearchBar(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    onSearch: (KeyboardActionScope) -> Unit
+    onSearch: (KeyboardActionScope) -> Unit,
+    onClear: () -> Unit,
 ) {
     Box {
         BasicTextField(
@@ -58,20 +63,42 @@ fun SearchBar(
                         .fillMaxWidth(0.9f)
                         .background(
                             MaterialTheme.colorScheme.primaryContainer,
-                            RoundedCornerShape(percent = 100)
+                            shape = CircleShape
                         )
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Row {
+                        Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        AnimatedVisibility(
+                            visible = value.isNotEmpty(),
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            innerTextField()
+                        }
+                    }
 
                     AnimatedVisibility(
                         visible = value.isNotEmpty(),
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        innerTextField()
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(
+                                id = R.string.clear_text
+                            ),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable {
+                                    onClear()
+                                }
+                        )
                     }
                 }
             }
@@ -86,12 +113,13 @@ fun SearchBar(
                     .fillMaxWidth(0.9f)
                     .background(
                         MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(percent = 100)
+                        shape = CircleShape
                     )
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
+
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
@@ -111,10 +139,11 @@ private fun SearchBarPreviewLight() {
         CenterAlignedTopAppBar(
             title = {
                 SearchBar(
-                    value = "",
+                    value = "321321321",
                     onValueChange = {},
                     onSearch = {},
-                    placeholder = "Cauta"
+                    placeholder = "Cauta",
+                    onClear = {}
                 )
             }
         )
@@ -131,7 +160,8 @@ private fun SearchBarPreviewDark() {
                     value = "",
                     onValueChange = {},
                     onSearch = {},
-                    placeholder = "Cauta"
+                    placeholder = "Cauta",
+                    onClear = {}
                 )
             }
         )

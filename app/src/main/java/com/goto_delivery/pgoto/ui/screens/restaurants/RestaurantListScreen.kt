@@ -63,11 +63,21 @@ fun RestaurantListScreen(
                 title = {
                     SearchBar(
                         value = searchBarValue,
-                        onValueChange = { searchBarValue = it },
+                        onValueChange = {
+                            if (it.isEmpty())
+                                viewModel.onEvent(RestaurantListEvents.OnClearFilter)
+                            searchBarValue = it
+                        },
                         placeholder = stringResource(
                             id = R.string.search_restaurants
                         ),
-                        onSearch = { /*TODO*/ }
+                        onSearch = {
+                            viewModel.onEvent(RestaurantListEvents.OnFilterBySearch(text = searchBarValue))
+                        },
+                        onClear = {
+                            searchBarValue = ""
+                            viewModel.onEvent(RestaurantListEvents.OnClearFilter)
+                        }
                     )
                 },
                 navigationIcon = {
