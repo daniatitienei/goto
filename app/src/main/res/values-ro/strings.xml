@@ -29,4 +29,17 @@
     <string name="we_recommend_that">Va recomandam sa folositi</string>
     <string name="the_location">locatia</string>
     <string name="for_faster_results">pentru rezultate rapide</string>
+    <string name="turn_it_on_to_use_this_functionality">Porniti-o pentru a folosi aceasta functionalitate</string>
+    <string name="location_is_disabled">Locatia este dezactivata</string>
+    <string name="ok">Bine</string>
+    <string name="cancel">Anuleaza</string>
+    <string name="search_restaurants">Cauta restaurante</string>
+    <string name="show_all">Afiseaza toate</string>
+    <string name="password_obscured">Parola nu se vede</string>
+    <string name="password_is_not_obscured">Parola se vede</string>
+    <string name="facebook_authentication">Contecteaza-te cu Facebook</string>
+    <string name="clear_text">Sterge textul</string>
+    <string name="search_food_category">Cauta o categorie de mancare</string>
+    <string name="close_categories">Inchide categoriile</string>
+    <string name="all_food_categories">Toate categoriile de mancare</string>
 </resources>

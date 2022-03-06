@@ -30,4 +30,17 @@
     <string name="we_recommend_that">We recommend that you use</string>
     <string name="the_location">the location</string>
     <string name="for_faster_results">for faster results</string>
+    <string name="turn_it_on_to_use_this_functionality">Turn it on to use this functionality</string>
+    <string name="location_is_disabled">Location is disabled</string>
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="search_restaurants">Search restaurants</string>
+    <string name="show_all">Show all</string>
+    <string name="password_obscured">Password is obscured</string>
+    <string name="password_is_not_obscured">Password isn\'t obscured</string>
+    <string name="facebook_authentication">Authenticate with Facebook</string>
+    <string name="clear_text">Clear text</string>
+    <string name="search_food_category">Search a food category</string>
+    <string name="close_categories">Close categories</string>
+    <string name="all_food_categories">All food categories</string>
 </resources>

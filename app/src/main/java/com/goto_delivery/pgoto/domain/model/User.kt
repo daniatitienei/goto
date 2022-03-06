@@ -5,5 +5,6 @@ data class User(
     val fullName: String = "",
     val address: String = "",
     val phoneNumber: String = "",
+    val city: String = "",
     val latestOrders: List<LatestOrder> = emptyList(),
 )

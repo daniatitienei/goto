@@ -1,6 +1,7 @@
 package com.goto_delivery.pgoto.domain.model
 
 data class Restaurant(
+    val id: Int = 0,
     val name: String = "",
     val estimatedDeliveryTime: String = "",
     val imageUrl: String = "",
@@ -8,5 +9,7 @@ data class Restaurant(
     val rating: Double = 0.0,
     val currency: String = "",
     val deliveryFee: Double = 0.0,
-    val menu: List<MenuCategory> = emptyList()
+    val categories: List<String> = emptyList(),
+    val menu: List<MenuCategory> = emptyList(),
+    val isOpen: Boolean = false
 )
