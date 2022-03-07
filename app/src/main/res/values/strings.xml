@@ -50,4 +50,6 @@
     <string name="estimated_delivery_time">Estimated delivery time</string>
     <string name="free">Free</string>
     <string name="inspect_food">Inspect food</string>
+    <string name="favorites">Favorites</string>
+    <string name="search_results">Search results</string>
 </resources>

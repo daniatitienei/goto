@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.domain.use_case.authentication.AuthenticationUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
-import com.goto_delivery.pgoto.ui.utils.Graphs
+import com.goto_delivery.pgoto.ui.utils.NavigationGraphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -66,10 +66,10 @@ class RegisterViewModel @Inject constructor(
                         when (resource) {
                             is Resource.Success -> {
                                 Log.d("register", "success ${resource.data?.email}")
-                                sendEvent(
+                                emitEvent(
                                     UiEvent.Navigate(
                                         route = Screen.TurnOnLocation.route,
-                                        popUpTo = UiEvent.Navigate.PopUpTo(route = Graphs.Authentication, inclusive = true)
+                                        popUpTo = UiEvent.Navigate.PopUpTo(route = NavigationGraphs.Authentication, inclusive = true)
                                     )
                                 )
                             }
@@ -93,7 +93,7 @@ class RegisterViewModel @Inject constructor(
                     }.launchIn(viewModelScope)
             }
             is RegisterEvents.OnNavigate -> {
-                sendEvent(
+                emitEvent(
                     UiEvent.Navigate(
                         route = event.route,
                         popUpTo = event.popUpTo
@@ -109,10 +109,10 @@ class RegisterViewModel @Inject constructor(
                         .onEach { resource ->
                             when (resource) {
                                 is Resource.Success -> {
-                                    sendEvent(
+                                    emitEvent(
                                         UiEvent.Navigate(
                                             route = Screen.TurnOnLocation.route,
-                                            popUpTo = UiEvent.Navigate.PopUpTo(route = Graphs.Authentication, inclusive = true)
+                                            popUpTo = UiEvent.Navigate.PopUpTo(route = NavigationGraphs.Authentication, inclusive = true)
                                         )
                                     )
                                 }
@@ -125,13 +125,13 @@ class RegisterViewModel @Inject constructor(
                             }
                         }.launchIn(viewModelScope)
                 } else {
-                    sendEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
+                    emitEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
                 }
             }
         }
     }
 
-    private fun sendEvent(event: UiEvent) {
+    private fun emitEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.emit(event)
         }

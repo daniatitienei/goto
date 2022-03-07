@@ -17,7 +17,7 @@ import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
 import com.goto_delivery.pgoto.ui.screens.restaurant_menu.RestaurantMenu
 import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
-import com.goto_delivery.pgoto.ui.utils.Graphs
+import com.goto_delivery.pgoto.ui.utils.NavigationGraphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 
 @ExperimentalMaterialApi
@@ -59,7 +59,11 @@ fun Navigation() {
         }
 
         composable(route = Screen.RestaurantMenu.route) {
-            RestaurantMenu()
+            RestaurantMenu(
+                onPopBackStack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
@@ -67,7 +71,7 @@ fun Navigation() {
 @ExperimentalMaterial3Api
 @ExperimentalComposeUiApi
 fun NavGraphBuilder.authenticationGraph(navController: NavController) {
-    navigation(startDestination = Screen.Register.route, route = Graphs.Authentication) {
+    navigation(startDestination = Screen.Register.route, route = NavigationGraphs.Authentication) {
         composable(Screen.Register.route) {
             RegisterScreen { destination ->
                 navController.navigate(destination.route) {

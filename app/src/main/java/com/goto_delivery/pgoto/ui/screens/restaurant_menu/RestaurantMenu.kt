@@ -1,6 +1,10 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,20 +27,36 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.domain.model.Food
+import com.goto_delivery.pgoto.domain.model.MenuCategory
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Constants
+import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
+import kotlinx.coroutines.flow.collect
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalMaterial3Api
 @Composable
 fun RestaurantMenu(
-    viewModel: RestaurantMenuViewModel = hiltViewModel()
+    viewModel: RestaurantMenuViewModel = hiltViewModel(),
+    onPopBackStack: (UiEvent.PopBackStack) -> Unit
 ) {
     val state = viewModel.state.value
 
     var searchBarValue by remember {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is UiEvent.PopBackStack -> {
+                    onPopBackStack(event)
+                }
+                else -> Unit
+            }
+        }
     }
 
     if (state.isLoading)
@@ -58,12 +78,18 @@ fun RestaurantMenu(
                             value = searchBarValue,
                             onValueChange = { searchBarValue = it },
                             placeholder = stringResource(id = R.string.search_food),
-                            onSearch = { /*TODO*/ },
-                            onClear = { /*TODO*/ }
+                            onSearch = {
+                                viewModel.onEvent(RestaurantMenuEvents.OnSearchFood(value = searchBarValue))
+                            },
+                            onClear = { searchBarValue = "" }
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(
+                            onClick = {
+                                viewModel.onEvent(RestaurantMenuEvents.OnPopBackStack)
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Rounded.ArrowBackIosNew,
                                 contentDescription = stringResource(
@@ -80,6 +106,7 @@ fun RestaurantMenu(
                 verticalArrangement = Arrangement.spacedBy(15.dp),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
             ) {
+                /* Restaurant title and info */
                 item {
                     /* Restaurant name */
                     Text(
@@ -173,44 +200,80 @@ fun RestaurantMenu(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
+                /* Search results */
+                item {
+                    AnimatedVisibility(
+                        visible = state.filteredFoodList.isNotEmpty(),
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.search_results),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                items(state.filteredFoodList) { food ->
+                    FoodCard(
+                        food = food,
+                        currency = state.restaurant.currency,
+                        onClick = { /*TODO*/ },
+                    )
+                }
+
                 /* Menu */
                 items(state.restaurant.menu) { menuCategory ->
-
-                    /* Category name */
-                    Text(
-                        text = menuCategory.name,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    FoodCategory(
+                        menuCategory = menuCategory,
+                        currency = state.restaurant.currency,
+                        onFoodCardClick = { /*TODO*/ },
                     )
-
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    /* Food from that category */
-                    repeat(menuCategory.food.size) { index ->
-
-                        val food = menuCategory.food[index]
-
-                        FoodCard(
-                            food = food,
-                            currency = state.restaurant.currency,
-                            onClick = { /*TODO*/ }
-                        )
-
-                        if (index != menuCategory.food.size)
-                            Spacer(modifier = Modifier.height(10.dp))
-                    }
                 }
             }
         }
 }
 
 @Composable
-private fun FoodCard(food: Food, currency: String, onClick: () -> Unit) {
+private fun FoodCategory(
+    menuCategory: MenuCategory,
+    currency: String,
+    onFoodCardClick: (Food) -> Unit
+) {
+    /* Category name */
+    Text(
+        text = menuCategory.name,
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary
+    )
+
+    Spacer(modifier = Modifier.height(15.dp))
+
+    /* Food from that category */
+    repeat(menuCategory.food.size) { index ->
+
+        val food = menuCategory.food[index]
+
+        FoodCard(
+            food = food,
+            currency = currency,
+            onClick = onFoodCardClick,
+        )
+
+        if (index != menuCategory.food.size)
+            Spacer(modifier = Modifier.height(10.dp))
+    }
+}
+
+@Composable
+private fun FoodCard(food: Food, currency: String, onClick: (Food) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onClick(food) },
         verticalAlignment = Alignment.Bottom
     ) {
         Column(
@@ -224,7 +287,7 @@ private fun FoodCard(food: Food, currency: String, onClick: () -> Unit) {
         }
 
         Row(
-            modifier = Modifier.weight(0.7f),
+            modifier = Modifier.weight(0.9f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
@@ -263,23 +326,5 @@ private fun FoodCardPreview() {
             currency = "RON",
             onClick = {}
         )
-    }
-}
-
-@ExperimentalMaterial3Api
-@Preview(showBackground = true)
-@Composable
-private fun RestaurantMenuPreviewLight() {
-    GotoTheme {
-        RestaurantMenu()
-    }
-}
-
-@ExperimentalMaterial3Api
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun RestaurantMenuPreviewDark() {
-    GotoTheme {
-        RestaurantMenu()
     }
 }

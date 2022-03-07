@@ -25,13 +25,13 @@ class LocationViewModel @Inject constructor(
     fun onEvent(event: LocationEvents) {
         when (event) {
             is LocationEvents.OnNavigate -> {
-                sendEvent(UiEvent.Navigate(route = event.route, popUpTo = event.popUpTo))
+                emitEvent(UiEvent.Navigate(route = event.route, popUpTo = event.popUpTo))
             }
             is LocationEvents.OnRequestPermission -> {
-                sendEvent(UiEvent.RequestPermissionDialog)
+                emitEvent(UiEvent.RequestPermissionDialog)
             }
             is LocationEvents.OnTurnOnLocationDialog -> {
-                sendEvent(UiEvent.AlertDialog)
+                emitEvent(UiEvent.AlertDialog)
             }
             is LocationEvents.OnUpdateAddress -> {
                 useCases.updateAddress(event.newAddress, event.city)
@@ -50,7 +50,7 @@ class LocationViewModel @Inject constructor(
         }
     }
 
-    private fun sendEvent(event: UiEvent) {
+    private fun emitEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.emit(event)
         }
