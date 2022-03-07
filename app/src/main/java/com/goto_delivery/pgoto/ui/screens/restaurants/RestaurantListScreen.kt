@@ -1,6 +1,5 @@
 package com.goto_delivery.pgoto.ui.screens.restaurants
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -34,7 +33,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,7 +43,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.data.core.test_tags.TestTags
 import com.goto_delivery.pgoto.domain.model.Restaurant
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
@@ -58,13 +56,14 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterial3Api
 @Composable
 fun RestaurantListScreen(
-    viewModel: RestaurantListViewModel = hiltViewModel()
+    viewModel: RestaurantListViewModel = hiltViewModel(),
+    onNavigate: (UiEvent.Navigate) -> Unit
 ) {
     val state = viewModel.state.value
 
     val windowInfo = rememberWindowInfo()
 
-    var restaurantSearchBarValue by remember {
+    var searchBarValue by remember {
         mutableStateOf("")
     }
 
@@ -82,7 +81,7 @@ fun RestaurantListScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.Navigate -> {
-
+                    onNavigate(event)
                 }
                 else -> Unit
             }
@@ -168,11 +167,11 @@ fun RestaurantListScreen(
                 SmallTopAppBar(
                     title = {
                         SearchBar(
-                            value = restaurantSearchBarValue,
+                            value = searchBarValue,
                             onValueChange = {
                                 if (it.isEmpty())
                                     viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
-                                restaurantSearchBarValue = it
+                                searchBarValue = it
                             },
                             placeholder = stringResource(
                                 id = R.string.search_restaurants
@@ -181,12 +180,12 @@ fun RestaurantListScreen(
                                 selectedFoodCategory = null
                                 viewModel.onEvent(
                                     RestaurantListEvents.OnFilterRestaurantBySearch(
-                                        text = restaurantSearchBarValue
+                                        text = searchBarValue
                                     )
                                 )
                             },
                             onClear = {
-                                restaurantSearchBarValue = ""
+                                searchBarValue = ""
                                 viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
                             }
                         )
@@ -280,7 +279,16 @@ fun RestaurantListScreen(
                             modifier = Modifier.animateItemPlacement(
                                 animationSpec = tween(500)
                             ),
-                            onClick = { /*TODO*/ }
+                            onClick = {
+                                viewModel.onEvent(
+                                    RestaurantListEvents.OnNavigate(
+                                        route = Screen.RestaurantMenu.route.replace(
+                                            "{restaurantId}",
+                                            restaurant.id.toString()
+                                        )
+                                    )
+                                )
+                            }
                         )
                     }
 

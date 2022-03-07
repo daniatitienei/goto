@@ -15,6 +15,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
+import com.goto_delivery.pgoto.ui.screens.restaurant_menu.RestaurantMenu
 import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
 import com.goto_delivery.pgoto.ui.utils.Graphs
 import com.goto_delivery.pgoto.ui.utils.Screen
@@ -48,7 +49,17 @@ fun Navigation() {
         }
 
         composable(route = Screen.RestaurantList.route) {
-            RestaurantListScreen()
+            RestaurantListScreen(
+                onNavigate = { destination ->
+                    navController.navigate(destination.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.RestaurantMenu.route) {
+            RestaurantMenu()
         }
     }
 }
