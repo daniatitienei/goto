@@ -42,4 +42,11 @@
     <string name="search_food_category">Cauta o categorie de mancare</string>
     <string name="close_categories">Inchide categoriile</string>
     <string name="all_food_categories">Toate categoriile de mancare</string>
+    <string name="go_back">Inapoi</string>
+    <string name="search_food">Cauta mancare</string>
+    <string name="rating">Rating</string>
+    <string name="delivery_fee">Taxa de livrare</string>
+    <string name="estimated_delivery_time">Timpul estimat de livrare</string>
+    <string name="free">Gratis</string>
+    <string name="inspect_food">Inspect food</string>
 </resources>
