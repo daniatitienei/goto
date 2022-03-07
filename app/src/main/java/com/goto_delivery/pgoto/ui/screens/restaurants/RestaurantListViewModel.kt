@@ -35,7 +35,7 @@ class RestaurantListViewModel @Inject constructor(
     fun onEvent(event: RestaurantListEvents) {
         when (event) {
             is RestaurantListEvents.OnNavigate -> {
-
+                emitEvent(UiEvent.Navigate(route = event.route))
             }
             is RestaurantListEvents.OnFilterByCategory -> {
                 _state.value = _state.value.copy(
@@ -61,7 +61,7 @@ class RestaurantListViewModel @Inject constructor(
         }
     }
 
-    private fun sendEvent(event: UiEvent) {
+    private fun emitEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.emit(event)
         }

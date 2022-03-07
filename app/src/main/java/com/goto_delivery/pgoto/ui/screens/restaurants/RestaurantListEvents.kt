@@ -1,7 +1,7 @@
 package com.goto_delivery.pgoto.ui.screens.restaurants
 
 sealed class RestaurantListEvents {
-    object OnNavigate : RestaurantListEvents()
+    data class OnNavigate(val route: String) : RestaurantListEvents()
 
     data class OnFilterRestaurantBySearch(val text: String) : RestaurantListEvents()
     object OnClearRestaurantFilter : RestaurantListEvents()

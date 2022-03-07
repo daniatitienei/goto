@@ -13,17 +13,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.data.core.test_tags.TestTags
 import com.goto_delivery.pgoto.ui.MainActivity
-import com.goto_delivery.pgoto.ui.authenticationGraph
-import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
-import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
-import com.goto_delivery.pgoto.ui.utils.Graphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.junit.Assert.*
 
 import org.junit.Before
 import org.junit.Rule

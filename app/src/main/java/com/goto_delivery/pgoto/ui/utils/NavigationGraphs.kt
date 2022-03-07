@@ -1,5 +1,5 @@
 package com.goto_delivery.pgoto.ui.utils
 
-object Graphs {
+object NavigationGraphs {
     const val Authentication = "authentication"
 }

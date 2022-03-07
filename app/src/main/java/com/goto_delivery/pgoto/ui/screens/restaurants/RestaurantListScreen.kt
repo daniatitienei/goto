@@ -1,6 +1,5 @@
 package com.goto_delivery.pgoto.ui.screens.restaurants
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,6 +16,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -34,18 +33,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.goto_delivery.pgoto.R
 import com.goto_delivery.pgoto.data.core.test_tags.TestTags
 import com.goto_delivery.pgoto.domain.model.Restaurant
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
@@ -58,13 +53,14 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterial3Api
 @Composable
 fun RestaurantListScreen(
-    viewModel: RestaurantListViewModel = hiltViewModel()
+    viewModel: RestaurantListViewModel = hiltViewModel(),
+    onNavigate: (UiEvent.Navigate) -> Unit
 ) {
     val state = viewModel.state.value
 
     val windowInfo = rememberWindowInfo()
 
-    var restaurantSearchBarValue by remember {
+    var searchBarValue by remember {
         mutableStateOf("")
     }
 
@@ -82,64 +78,157 @@ fun RestaurantListScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.Navigate -> {
-
+                    onNavigate(event)
                 }
                 else -> Unit
             }
         }
     }
 
-    BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState,
-        sheetContent = {
+    if (state.isLoading)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(align = Alignment.Center)
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    else
+        BottomSheetScaffold(
+            scaffoldState = bottomSheetScaffoldState,
+            sheetContent = {
+                Scaffold(
+                    topBar = {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(
+                                    text = stringResource(id = R.string.all_food_categories),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.ArrowBackIosNew,
+                                        contentDescription = stringResource(id = R.string.close_categories),
+                                        modifier = Modifier.rotate(-90f)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                ) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        items(state.foodCategories) { category ->
+
+                            val isSelected = selectedFoodCategory == category
+
+                            ListItem(
+                                text = {
+                                    Text(
+                                        text = category.toUpperCase(locale = Locale.current),
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                                    )
+                                },
+                                modifier = Modifier
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                                        }
+
+                                        /* Update the current food category */
+                                        if (!isSelected) {
+                                            selectedFoodCategory = category
+                                            viewModel.onEvent(
+                                                RestaurantListEvents.OnFilterByCategory(
+                                                    category = category
+                                                )
+                                            )
+                                        } else {
+                                            selectedFoodCategory = null
+                                            viewModel.onEvent(
+                                                RestaurantListEvents.OnClearRestaurantFilter
+                                            )
+                                        }
+                                    }
+                            )
+                        }
+                    }
+                }
+            },
+            sheetPeekHeight = 0.dp
+        ) {
             Scaffold(
                 topBar = {
-                    CenterAlignedTopAppBar(
+                    SmallTopAppBar(
                         title = {
-                            Text(
-                                text = stringResource(id = R.string.all_food_categories),
-                                style = MaterialTheme.typography.bodyLarge
+                            SearchBar(
+                                value = searchBarValue,
+                                onValueChange = {
+                                    if (it.isEmpty())
+                                        viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
+                                    searchBarValue = it
+                                },
+                                placeholder = stringResource(
+                                    id = R.string.search_restaurants
+                                ),
+                                onSearch = {
+                                    selectedFoodCategory = null
+                                    viewModel.onEvent(
+                                        RestaurantListEvents.OnFilterRestaurantBySearch(
+                                            text = searchBarValue
+                                        )
+                                    )
+                                },
+                                onClear = {
+                                    searchBarValue = ""
+                                    viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
+                                }
                             )
                         },
                         navigationIcon = {
-                            IconButton(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    }
-                                }
-                            ) {
+                            IconButton(onClick = { /*TODO*/ }) {
                                 Icon(
-                                    imageVector = Icons.Rounded.ArrowBackIosNew,
-                                    contentDescription = stringResource(id = R.string.close_categories),
-                                    modifier = Modifier.rotate(-90f)
+                                    painter = painterResource(id = R.drawable.ic_account_circle),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
-                        }
+                        },
                     )
-                }
-            ) {
-                LazyColumn(
-                    contentPadding = PaddingValues(vertical = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                },
+            ) { innerPadding ->
+                Column(
+                    modifier = Modifier.padding(innerPadding)
                 ) {
-                    items(state.foodCategories) { category ->
+                    LazyRow(
+                        contentPadding = PaddingValues(
+                            horizontal = 20.dp,
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        items(if (!state.isLoading && state.foodCategories.isNotEmpty()) state.foodCategories else emptyList()) { category ->
+                            val isSelected =
+                                selectedFoodCategory?.equals(category, ignoreCase = true) ?: false
 
-                        val isSelected = selectedFoodCategory == category
-
-                        ListItem(
-                            text = {
-                                Text(
-                                    text = category.toUpperCase(locale = Locale.current),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
-                                )
-                            },
-                            modifier = Modifier
-                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-                                .clickable {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    }
+                            FoodFilterChip(
+                                text = category,
+                                isSelected = isSelected,
+                                modifier = Modifier.testTag(TestTags.FILTER_CHIP),
+                                onClick = {
 
                                     /* Update the current food category */
                                     if (!isSelected) {
@@ -156,152 +245,53 @@ fun RestaurantListScreen(
                                         )
                                     }
                                 }
-                        )
-                    }
-                }
-            }
-        },
-        sheetPeekHeight = 0.dp
-    ) {
-        Scaffold(
-            topBar = {
-                SmallTopAppBar(
-                    title = {
-                        SearchBar(
-                            value = restaurantSearchBarValue,
-                            onValueChange = {
-                                if (it.isEmpty())
-                                    viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
-                                restaurantSearchBarValue = it
-                            },
-                            placeholder = stringResource(
-                                id = R.string.search_restaurants
-                            ),
-                            onSearch = {
-                                selectedFoodCategory = null
-                                viewModel.onEvent(
-                                    RestaurantListEvents.OnFilterRestaurantBySearch(
-                                        text = restaurantSearchBarValue
-                                    )
-                                )
-                            },
-                            onClear = {
-                                restaurantSearchBarValue = ""
-                                viewModel.onEvent(RestaurantListEvents.OnClearRestaurantFilter)
-                            }
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_account_circle),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
                             )
                         }
-                    },
-                )
-            },
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                LazyRow(
-                    contentPadding = PaddingValues(
-                        horizontal = 20.dp,
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(15.dp)
-                ) {
-                    items(if (!state.isLoading && state.foodCategories.isNotEmpty()) state.foodCategories else emptyList()) { category ->
-                        val isSelected =
-                            selectedFoodCategory?.equals(category, ignoreCase = true) ?: false
-
-                        FoodFilterChip(
-                            text = category,
-                            isSelected = isSelected,
-                            modifier = Modifier.testTag(TestTags.FILTER_CHIP),
-                            onClick = {
-
-                                /* Update the current food category */
-                                if (!isSelected) {
-                                    selectedFoodCategory = category
+                        /* Show all food categories button */
+                        item {
+                            if (state.foodCategories.isNotEmpty())
+                                FoodFilterChip(
+                                    text = stringResource(id = R.string.show_all),
+                                    isSelected = true,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.expand()
+                                        }
+                                    }
+                                )
+                        }
+                    }
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            horizontal = 20.dp,
+                            vertical = 15.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        items(if (!state.isLoading && state.filteredRestaurants.isEmpty()) state.restaurants else state.filteredRestaurants) { restaurant ->
+                            RestaurantCard(
+                                windowHeightDp = windowInfo.screenHeightDp,
+                                restaurant = restaurant,
+                                modifier = Modifier.animateItemPlacement(
+                                    animationSpec = tween(500)
+                                ),
+                                onClick = {
                                     viewModel.onEvent(
-                                        RestaurantListEvents.OnFilterByCategory(
-                                            category = category
+                                        RestaurantListEvents.OnNavigate(
+                                            route = Screen.RestaurantMenu.route.replace(
+                                                "{restaurantId}",
+                                                restaurant.id.toString()
+                                            )
                                         )
                                     )
-                                } else {
-                                    selectedFoodCategory = null
-                                    viewModel.onEvent(
-                                        RestaurantListEvents.OnClearRestaurantFilter
-                                    )
-                                }
-                            }
-                        )
-                    }
-                    items(if (state.isLoading) 5 else 0) {
-                        FoodFilterChip(
-                            text = "", isSelected = false, onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .width(100.dp)
-                                .clip(CircleShape)
-                                .placeholder(
-                                    visible = true,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                ),
-                        )
-                    }
-                    /* Show all food categories button */
-                    item {
-                        if (state.foodCategories.isNotEmpty())
-                            FoodFilterChip(
-                                text = stringResource(id = R.string.show_all),
-                                isSelected = true,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.expand()
-                                    }
                                 }
                             )
+                        }
                     }
                 }
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        horizontal = 20.dp,
-                        vertical = 15.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(15.dp)
-                ) {
-                    items(if (!state.isLoading && state.filteredRestaurants.isEmpty()) state.restaurants else state.filteredRestaurants) { restaurant ->
-                        RestaurantCard(
-                            windowHeightDp = windowInfo.screenHeightDp,
-                            restaurant = restaurant,
-                            modifier = Modifier.animateItemPlacement(
-                                animationSpec = tween(500)
-                            ),
-                            onClick = { /*TODO*/ }
-                        )
-                    }
 
-                    items(if (state.isLoading) 5 else 0) {
-                        RestaurantCard(
-                            windowHeightDp = windowInfo.screenHeightDp,
-                            restaurant = Restaurant(),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(15.dp))
-                                .placeholder(
-                                    visible = true,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                ),
-                            onClick = { /*TODO*/ }
-                        )
-                    }
-                }
             }
-
         }
-    }
 }
 
 @ExperimentalMaterial3Api

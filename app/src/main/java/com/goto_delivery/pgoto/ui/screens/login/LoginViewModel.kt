@@ -77,7 +77,7 @@ class LoginViewModel @Inject constructor(
                     }.launchIn(viewModelScope)
             }
             is LoginEvents.OnNavigate -> {
-                sendEvent(
+                emitEvent(
                     UiEvent.Navigate(
                         route = event.route,
                         popUpTo = event.popUpTo
@@ -104,13 +104,13 @@ class LoginViewModel @Inject constructor(
                             }
                         }.launchIn(viewModelScope)
                 } else {
-                    sendEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
+                    emitEvent(UiEvent.Toast(message = application.getString(R.string.google_auth_failed)))
                 }
             }
         }
     }
 
-    private fun sendEvent(event: UiEvent) {
+    private fun emitEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.emit(event)
         }

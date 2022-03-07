@@ -43,4 +43,13 @@
     <string name="search_food_category">Search a food category</string>
     <string name="close_categories">Close categories</string>
     <string name="all_food_categories">All food categories</string>
+    <string name="go_back">Go back</string>
+    <string name="search_food">Search food</string>
+    <string name="rating">Rating</string>
+    <string name="delivery_fee">Delivery fee</string>
+    <string name="estimated_delivery_time">Estimated delivery time</string>
+    <string name="free">Free</string>
+    <string name="inspect_food">Inspect food</string>
+    <string name="favorites">Favorites</string>
+    <string name="search_results">Search results</string>
 </resources>

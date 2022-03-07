@@ -15,8 +15,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
+import com.goto_delivery.pgoto.ui.screens.restaurant_menu.RestaurantMenu
 import com.goto_delivery.pgoto.ui.screens.restaurants.RestaurantListScreen
-import com.goto_delivery.pgoto.ui.utils.Graphs
+import com.goto_delivery.pgoto.ui.utils.NavigationGraphs
 import com.goto_delivery.pgoto.ui.utils.Screen
 
 @ExperimentalMaterialApi
@@ -28,7 +29,7 @@ import com.goto_delivery.pgoto.ui.utils.Screen
 fun Navigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.RestaurantList.route) {
+    NavHost(navController = navController, startDestination = Screen.TurnOnLocation.route) {
         authenticationGraph(navController = navController)
 
         composable(route = Screen.TurnOnLocation.route) {
@@ -48,7 +49,21 @@ fun Navigation() {
         }
 
         composable(route = Screen.RestaurantList.route) {
-            RestaurantListScreen()
+            RestaurantListScreen(
+                onNavigate = { destination ->
+                    navController.navigate(destination.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.RestaurantMenu.route) {
+            RestaurantMenu(
+                onPopBackStack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
@@ -56,7 +71,7 @@ fun Navigation() {
 @ExperimentalMaterial3Api
 @ExperimentalComposeUiApi
 fun NavGraphBuilder.authenticationGraph(navController: NavController) {
-    navigation(startDestination = Screen.Register.route, route = Graphs.Authentication) {
+    navigation(startDestination = Screen.Register.route, route = NavigationGraphs.Authentication) {
         composable(Screen.Register.route) {
             RegisterScreen { destination ->
                 navController.navigate(destination.route) {

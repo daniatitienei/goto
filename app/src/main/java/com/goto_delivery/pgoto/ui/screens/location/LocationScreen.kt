@@ -83,10 +83,14 @@ fun TurnOnLocationScreen(
                     viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
                 },
                 onSuccess = { location ->
-                    val longitude = location.longitude
-                    val latitude = location.latitude
+                    val longitude = location?.longitude
+                    val latitude = location?.latitude
 
-                    val newAddress = getCurrentAddress(context, latitude, longitude)
+                    if (longitude == null && latitude == null)
+                        return@checkGpsStatus
+
+                    val newAddress =
+                        getCurrentAddress(context, latitude!!, longitude!!)
                     val city = getCurrentCity(context, latitude, longitude)
 
                     viewModel.onEvent(
@@ -200,10 +204,14 @@ fun TurnOnLocationScreen(
                                     viewModel.onEvent(LocationEvents.OnTurnOnLocationDialog)
                                 },
                                 onSuccess = { location ->
-                                    val longitude = location.longitude
-                                    val latitude = location.latitude
+                                    val longitude = location?.longitude
+                                    val latitude = location?.latitude
 
-                                    val newAddress = getCurrentAddress(context, latitude, longitude)
+                                    if (longitude == null && latitude == null)
+                                        return@checkGpsStatus
+
+                                    val newAddress =
+                                        getCurrentAddress(context, latitude!!, longitude!!)
                                     val city = getCurrentCity(context, latitude, longitude)
 
                                     viewModel.onEvent(
@@ -267,7 +275,7 @@ fun TurnOnLocationScreen(
 private fun checkGpsStatus(
     context: Context,
     onDisabled: () -> Unit,
-    onSuccess: (Location) -> Unit
+    onSuccess: (Location?) -> Unit
 ) {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     val gpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -278,7 +286,7 @@ private fun checkGpsStatus(
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
-                onSuccess(location!!)
+                onSuccess(location)
             }
     } else {
         Log.d("location", "gps off")
