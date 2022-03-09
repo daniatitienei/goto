@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,11 +15,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -32,10 +37,11 @@ import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Constants
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
+import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
 import kotlinx.coroutines.flow.collect
 
-@OptIn(ExperimentalFoundationApi::class)
+@ExperimentalFoundationApi
 @ExperimentalMaterial3Api
 @Composable
 fun RestaurantMenu(
@@ -325,6 +331,147 @@ private fun FoodCardPreview() {
             food = Constants.food,
             currency = "RON",
             onClick = {}
+        )
+    }
+}
+
+@ExperimentalMaterial3Api
+@Composable
+fun InspectFoodBottomSheet(food: Food, currency: String) {
+
+    val windowInfo = rememberWindowInfo()
+
+    Scaffold(
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
+            ) {
+                Button(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text(
+                        text = "${stringResource(id = R.string.add_for)} ${food.price.twoDecimals()} $currency",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())
+        ) {
+            item {
+                Box {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(windowInfo.screenHeightDp / 3)
+                            .clip(RoundedCornerShape(bottomEnd = 20.dp, bottomStart = 20.dp))
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ristoccero),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    SmallTopAppBar(
+                        title = {},
+                        navigationIcon = {
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = stringResource(
+                                        id = R.string.close
+                                    )
+                                )
+                            }
+                        },
+                        colors = smallTopAppBarColors(
+                            containerColor = Color.Transparent
+                        )
+                    )
+                }
+            }
+
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = food.name,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = food.ingredients,
+                        textAlign = TextAlign.Justify,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.7f),
+                    )
+                }
+            }
+
+            item {
+                if (food.suggestions.isNotEmpty())
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.suggestions),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        repeat(food.suggestions.size) { index ->
+                            val currentFoodSuggestion = food.suggestions[index]
+
+                            FoodCard(
+                                food = currentFoodSuggestion,
+                                currency = currency,
+                                onClick = {})
+
+                            if (index != food.suggestions.size)
+                                Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    }
+            }
+        }
+    }
+}
+
+@ExperimentalMaterial3Api
+@Preview(showBackground = true)
+@Composable
+private fun InspectFoodBottomSheetLight() {
+    GotoTheme {
+        InspectFoodBottomSheet(
+            currency = "RON",
+            food = Constants.food
+        )
+    }
+}
+
+@ExperimentalMaterial3Api
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun InspectFoodBottomSheetDark() {
+    GotoTheme {
+        InspectFoodBottomSheet(
+            currency = "RON",
+            food = Constants.food
         )
     }
 }

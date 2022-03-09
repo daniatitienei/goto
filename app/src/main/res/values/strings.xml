@@ -52,4 +52,7 @@
     <string name="inspect_food">Inspect food</string>
     <string name="favorites">Favorites</string>
     <string name="search_results">Search results</string>
+    <string name="close">Close</string>
+    <string name="add_for">Add for</string>
+    <string name="suggestions">Suggestions</string>
 </resources>
