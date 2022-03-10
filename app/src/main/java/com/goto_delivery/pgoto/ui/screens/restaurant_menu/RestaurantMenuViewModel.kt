@@ -7,7 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.goto_delivery.pgoto.domain.model.Food
-import com.goto_delivery.pgoto.domain.model.MenuCategory
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
 import com.goto_delivery.pgoto.ui.utils.UiEvent
@@ -62,8 +61,14 @@ class RestaurantMenuViewModel @Inject constructor(
             is RestaurantMenuEvents.OnPopBackStack -> {
                 emitEvent(UiEvent.PopBackStack)
             }
-            is RestaurantMenuEvents.OnFoodClick -> {
-
+            is RestaurantMenuEvents.OnAddToCartClick -> {
+                val newCartItems = _state.value.cart.items + event.foodList
+                _state.value = _state.value.copy(
+                    cart = _state.value.cart.copy(
+                        items = newCartItems,
+                        total = calculateCartTotal(cart = newCartItems)
+                    )
+                )
             }
             is RestaurantMenuEvents.OnSearchFood -> {
                 filterFood(text = event.value)
@@ -75,6 +80,16 @@ class RestaurantMenuViewModel @Inject constructor(
         viewModelScope.launch {
             _uiEvent.emit(event)
         }
+    }
+
+    private fun calculateCartTotal(cart: List<Food>): Double {
+        var total = 0.0
+
+        cart.forEach { food ->
+            total += food.price
+        }
+
+        return total
     }
 
     private fun filterFood(text: String) {

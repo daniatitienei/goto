@@ -52,6 +52,7 @@
     <string name="favorites">Favorite</string>
     <string name="search_results">Rezultatele cautarii</string>
     <string name="close">Inchide</string>
-    <string name="add_for">Add for</string>
-    <string name="suggestions">Suggestions</string>
+    <string name="add_for">Adauga pentru</string>
+    <string name="suggestions">Sugestii</string>
+    <string name="buy_for">Cumpara de</string>
 </resources>
