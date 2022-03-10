@@ -6,10 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.goto_delivery.pgoto.domain.model.CartItem
 import com.goto_delivery.pgoto.domain.model.Food
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
 import com.goto_delivery.pgoto.ui.utils.UiEvent
+import com.goto_delivery.pgoto.ui.utils.mappers.toCartItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -62,7 +64,7 @@ class RestaurantMenuViewModel @Inject constructor(
                 emitEvent(UiEvent.PopBackStack)
             }
             is RestaurantMenuEvents.OnAddToCartClick -> {
-                val newCartItems = _state.value.cart.items + event.foodList
+                val newCartItems = _state.value.cart.items + event.foodList.map { it.toCartItem() }
                 _state.value = _state.value.copy(
                     cart = _state.value.cart.copy(
                         items = newCartItems,
@@ -73,6 +75,12 @@ class RestaurantMenuViewModel @Inject constructor(
             is RestaurantMenuEvents.OnSearchFood -> {
                 filterFood(text = event.value)
             }
+            is RestaurantMenuEvents.OnIncreaseQuantity -> {
+                increaseQuantity(event.food.toCartItem())
+            }
+            is RestaurantMenuEvents.OnDecreaseQuantity -> {
+                decreaseQuantity(event.food.toCartItem())
+            }
         }
     }
 
@@ -82,11 +90,54 @@ class RestaurantMenuViewModel @Inject constructor(
         }
     }
 
-    private fun calculateCartTotal(cart: List<Food>): Double {
+    private fun increaseQuantity(cartItem: CartItem) {
+
+        val newCart = _state.value.cart.items.map {
+            if (it.name == cartItem.name)
+                it.copy(quantity = it.quantity + 1)
+            else it
+        }
+        _state.value = _state.value.copy(
+            cart = _state.value.cart.copy(
+                items = newCart,
+                total = calculateCartTotal(newCart)
+            )
+        )
+    }
+
+    private fun decreaseQuantity(cartItem: CartItem) {
+        val mutableCart = _state.value.cart.items.toMutableList()
+
+        mutableCart.forEach {
+            if (it.name == cartItem.name) {
+                val currentQuantity = it.quantity - 1
+
+                if (currentQuantity <= 0)
+                    mutableCart.remove(it)
+            }
+        }
+
+        val newCart = mutableCart.map {
+            if (it.name == cartItem.name) {
+                val currentQuantity = it.quantity - 1
+
+                it.copy(quantity = currentQuantity)
+            } else it
+        }
+
+        _state.value = _state.value.copy(
+            cart = _state.value.cart.copy(
+                items = newCart,
+                total = calculateCartTotal(newCart)
+            )
+        )
+    }
+
+    private fun calculateCartTotal(cart: List<CartItem>): Double {
         var total = 0.0
 
         cart.forEach { food ->
-            total += food.price
+            total += (food.price * food.quantity)
         }
 
         return total

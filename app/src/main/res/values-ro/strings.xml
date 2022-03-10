@@ -55,4 +55,6 @@
     <string name="add_for">Adauga pentru</string>
     <string name="suggestions">Sugestii</string>
     <string name="buy_for">Cumpara de</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
 </resources>

@@ -56,4 +56,6 @@
     <string name="add_for">Add for</string>
     <string name="suggestions">Suggestions</string>
     <string name="buy_for">Buy for</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
 </resources>
