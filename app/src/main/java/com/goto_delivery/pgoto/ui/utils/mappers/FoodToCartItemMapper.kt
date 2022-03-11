@@ -5,5 +5,5 @@ import com.goto_delivery.pgoto.domain.model.Food
 
 fun Food.toCartItem() =
     CartItem(
-        name, ingredients, price, imageUrl,
+        name, ingredients, price,
     )

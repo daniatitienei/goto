@@ -57,4 +57,7 @@
     <string name="buy_for">Cumpara de</string>
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
+    <string name="pack">Ambalaj</string>
+    <string name="compulsory">Obligatoriu</string>
+    <string name="add_pack">Adauga ambalaj</string>
 </resources>

@@ -58,4 +58,7 @@
     <string name="buy_for">Buy for</string>
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
+    <string name="pack">Ambalaj</string>
+    <string name="compulsory">Compulsory</string>
+    <string name="add_pack">Add pack</string>
 </resources>

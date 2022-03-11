@@ -1,12 +1,7 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,13 +9,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowBackIosNew
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,24 +30,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import com.goto_delivery.pgoto.R
-import com.goto_delivery.pgoto.domain.model.Cart
 import com.goto_delivery.pgoto.domain.model.CartItem
 import com.goto_delivery.pgoto.domain.model.Food
-import com.goto_delivery.pgoto.domain.model.MenuCategory
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
-import com.goto_delivery.pgoto.ui.utils.Constants
 import com.goto_delivery.pgoto.ui.utils.UiEvent
-import com.goto_delivery.pgoto.ui.utils.WindowInfo
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
+import com.goto_delivery.pgoto.ui.utils.mappers.toCartItem
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
 import kotlinx.coroutines.flow.collect
@@ -126,7 +115,8 @@ fun RestaurantMenu(
 
                             latestClickedFood = null
                         },
-                        onEvent = viewModel::onEvent
+                        onEvent = viewModel::onEvent,
+                        packFee = state.restaurant.packFee
                     )
                 }
             },
@@ -302,22 +292,7 @@ fun RestaurantMenu(
                     }
 
                     items(state.filteredFoodList) { food ->
-                        var isInCart by remember {
-                            mutableStateOf(false)
-                        }
-
-                        var currentCartItem by remember {
-                            mutableStateOf<CartItem?>(null)
-                        }
-
-                        if (state.cart.items.isNotEmpty())
-                            state.cart.items.map { cartItem ->
-                                if (food.name == cartItem.name) {
-                                    isInCart = true
-                                    currentCartItem = cartItem
-                                }
-                            }
-                        else isInCart = false
+                        val currentCartItem = viewModel.isInCart(food)
 
                         FoodCard(
                             food = food,
@@ -326,9 +301,8 @@ fun RestaurantMenu(
                                 latestClickedFood = food
                                 viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
                             },
-                            isInCart = isInCart,
-                            quantity = currentCartItem?.quantity,
-                            onEvent = viewModel::onEvent
+                            cartItem = currentCartItem,
+                            onEvent = viewModel::onEvent,
                         )
                     }
 
@@ -350,22 +324,7 @@ fun RestaurantMenu(
 
                             val food = menuCategory.food[index]
 
-                            var isInCart by remember {
-                                mutableStateOf(false)
-                            }
-
-                            var currentCartItem by remember {
-                                mutableStateOf<CartItem?>(null)
-                            }
-
-                            if (state.cart.items.isNotEmpty())
-                                state.cart.items.map { cartItem ->
-                                    if (food.name == cartItem.name) {
-                                        isInCart = true
-                                        currentCartItem = cartItem
-                                    }
-                                }
-                            else isInCart = false
+                            val currentCartItem = viewModel.isInCart(food)
 
                             FoodCard(
                                 food = food,
@@ -377,8 +336,7 @@ fun RestaurantMenu(
                                         bottomSheetScaffoldState.bottomSheetState.expand()
                                     }
                                 },
-                                isInCart = isInCart,
-                                quantity = currentCartItem?.quantity,
+                                cartItem = currentCartItem,
                                 onEvent = viewModel::onEvent
                             )
 
@@ -396,8 +354,7 @@ private fun FoodCard(
     food: Food,
     currency: String,
     onClick: (Food) -> Unit,
-    isInCart: Boolean = false,
-    quantity: Int? = null,
+    cartItem: CartItem? = null,
     onEvent: (RestaurantMenuEvents) -> Unit
 ) {
     Column(
@@ -456,86 +413,94 @@ private fun FoodCard(
         }
 
         /* Increase and decrease quantity if the food is in cart */
-        AnimatedVisibility(visible = isInCart) {
+        AnimatedVisibility(visible = cartItem != null) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(vertical = 10.dp, horizontal = 20.dp)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             ) {
-                quantity?.let {
-                    Text(text = "${quantity}x ${food.name}")
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(0.5f))
-                                .clickable {
-                                    onEvent(RestaurantMenuEvents.OnDecreaseQuantity(food))
-                                }
-                                .padding(5.dp)
-                        ) {
-                            Icon(
-                                Icons.Rounded.Remove,
-                                contentDescription = stringResource(id = R.string.decrease_quantity)
-                            )
+                cartItem?.let {
+                    FoodAddedToCart(
+                        quantity = cartItem.quantity,
+                        food = food,
+                        onDecreaseQuantityClick = {
+                            onEvent(RestaurantMenuEvents.OnDecreaseQuantity(food = food))
+                        },
+                        onIncreaseQuantityClick = {
+                            onEvent(RestaurantMenuEvents.OnIncreaseQuantity(food = food))
                         }
+                    )
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(0.5f))
-                                .clickable {
-                                    onEvent(RestaurantMenuEvents.OnIncreaseQuantity(food))
-                                }
-                                .padding(5.dp)
-                        ) {
-                            Icon(
-                                Icons.Rounded.Add,
-                                contentDescription = stringResource(id = R.string.increase_quantity)
-                            )
-                        }
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    var suggestions = ""
+
+                    cartItem.suggestionsAddedInCart.forEachIndexed { index, food ->
+                        suggestions += food.name
+
+                        if (index != cartItem.suggestionsAddedInCart.size - 1)
+                            suggestions += ", "
                     }
+
+                    Text(text = suggestions)
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-private fun FoodCardPreview() {
-    GotoTheme {
-        FoodCard(
-            food = Constants.food,
-            currency = "RON",
-            onClick = {},
-            isInCart = true,
-            quantity = 2,
-            onEvent = {}
-        )
-    }
-}
+private fun FoodAddedToCart(
+    quantity: Int,
+    food: Food,
+    onDecreaseQuantityClick: () -> Unit,
+    onIncreaseQuantityClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(text = "${quantity}x ${food.name}")
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun FoodCardPreviewDark() {
-    GotoTheme {
-        FoodCard(
-            food = Constants.food,
-            currency = "RON",
-            onClick = {},
-            isInCart = true,
-            quantity = 2,
-            onEvent = {}
-        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            /* Decrease quantity button */
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.5f))
+                    .clickable {
+                        onDecreaseQuantityClick()
+                    }
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.Remove,
+                    contentDescription = stringResource(id = R.string.decrease_quantity)
+                )
+            }
+
+            /* Increase quantity button */
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.5f))
+                    .clickable {
+                        onIncreaseQuantityClick()
+                    }
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = stringResource(id = R.string.increase_quantity)
+                )
+            }
+        }
     }
 }
 
@@ -544,19 +509,39 @@ private fun FoodCardPreviewDark() {
 fun InspectFoodBottomSheet(
     food: Food,
     currency: String,
-    onAddToCartClick: (Food) -> Unit,
+    packFee: Double,
+    onAddToCartClick: (CartItem) -> Unit,
     onEvent: (RestaurantMenuEvents) -> Unit
 ) {
     val windowInfo = rememberWindowInfo()
 
-    val cart = remember {
+    /* To store locally food from bottom sheet */
+    val suggestionsCart = remember {
         mutableStateListOf<Food>()
     }
 
-    cart.add(food)
+    var cartTotal by remember {
+        mutableStateOf(food.price)
+    }
+
+    var isPackingSelected by remember {
+        mutableStateOf(false)
+    }
+
+    /* Total after suggestion cart size changes */
+    LaunchedEffect(key1 = suggestionsCart.size) {
+        cartTotal = food.price
+
+        suggestionsCart.forEach { item ->
+            cartTotal += item.price
+        }
+    }
+
+    val context = LocalContext.current
 
     Scaffold(
         bottomBar = {
+            /* Add to cart button */
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -565,14 +550,15 @@ fun InspectFoodBottomSheet(
             ) {
                 Button(
                     onClick = {
-                        cart.forEach {
-                            onAddToCartClick(it)
-                        }
+                        onAddToCartClick(
+                            food.toCartItem().copy(suggestionsAddedInCart = suggestionsCart)
+                        )
                     },
+                    enabled = isPackingSelected,
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text(
-                        text = "${stringResource(id = R.string.add_for)} ${food.price.twoDecimals()} $currency",
+                        text = "${stringResource(id = R.string.add_for)} ${cartTotal.twoDecimals()} $currency",
                     )
                 }
             }
@@ -592,6 +578,7 @@ fun InspectFoodBottomSheet(
                 )
             }
 
+            /* Food info */
             item {
                 Column(
                     modifier = Modifier
@@ -617,6 +604,66 @@ fun InspectFoodBottomSheet(
                 }
             }
 
+            /* Add pack */
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                ) {
+                    Box(modifier = Modifier.weight(1.5f)) {
+                        Text(
+                            text = stringResource(id = R.string.add_pack),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentWidth(align = Alignment.End),
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.compulsory),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(8.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                SelectFoodCard(
+                    name = stringResource(id = R.string.pack),
+                    price = packFee,
+                    onClick = {
+                        if (isPackingSelected)
+                            suggestionsCart.remove(
+                                Food(
+                                    name = context.getString(R.string.pack),
+                                    price = packFee
+                                )
+                            )
+                        else
+                            suggestionsCart.add(
+                                Food(
+                                    name = context.getString(R.string.pack),
+                                    price = packFee
+                                )
+                            )
+
+                        isPackingSelected = !isPackingSelected
+                    },
+                    selected = isPackingSelected,
+                    currency = currency
+                )
+            }
+
             /* Suggestions */
             item {
                 if (food.suggestions.isNotEmpty())
@@ -625,30 +672,102 @@ fun InspectFoodBottomSheet(
                             .fillMaxWidth()
                             .padding(top = 20.dp)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.suggestions),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.suggestions),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(5.dp))
 
                         repeat(food.suggestions.size) { index ->
-                            val currentFoodSuggestion = food.suggestions[index]
 
-                            FoodCard(
-                                food = currentFoodSuggestion,
-                                currency = currency,
+                            val currentSuggestion = food.suggestions[index]
+
+                            val isInCart = suggestionsCart.contains(currentSuggestion)
+
+                            SelectFoodCard(
+                                name = currentSuggestion.name,
+                                price = currentSuggestion.price,
                                 onClick = {
-                                    cart.add(currentFoodSuggestion)
+                                    if (isInCart)
+                                        suggestionsCart.remove(currentSuggestion)
+                                    else
+                                        suggestionsCart.add(currentSuggestion)
                                 },
-                                onEvent = onEvent
+                                selected = isInCart,
+                                currency = currency
                             )
 
                             if (index != food.suggestions.size)
                                 Spacer(modifier = Modifier.height(15.dp))
                         }
                     }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectFoodCard(
+    name: String,
+    price: Double,
+    onClick: () -> Unit,
+    selected: Boolean,
+    currency: String
+) {
+
+    val icon = if (selected) Icons.Rounded.Remove else Icons.Rounded.Add
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = if (!selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row {
+            Text(text = name)
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "+ ${price.twoDecimals()} $currency",
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(backgroundColor)
+                    .clickable { onClick() }
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconColor
+                )
             }
         }
     }
@@ -692,34 +811,6 @@ private fun ImageOverflowedByTopBar(
             colors = smallTopAppBarColors(
                 containerColor = Color.Transparent
             )
-        )
-    }
-}
-
-@ExperimentalMaterial3Api
-@Preview(showBackground = true)
-@Composable
-private fun InspectFoodBottomSheetLight() {
-    GotoTheme {
-        InspectFoodBottomSheet(
-            currency = "RON",
-            food = Constants.food,
-            onEvent = {},
-            onAddToCartClick = {}
-        )
-    }
-}
-
-@ExperimentalMaterial3Api
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-private fun InspectFoodBottomSheetDark() {
-    GotoTheme {
-        InspectFoodBottomSheet(
-            currency = "RON",
-            food = Constants.food,
-            onAddToCartClick = {},
-            onEvent = {}
         )
     }
 }

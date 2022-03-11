@@ -1,9 +1,6 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -82,7 +79,7 @@ class RestaurantMenuViewModel @Inject constructor(
         }
     }
 
-    private fun addToCart(food: Food) {
+    private fun addToCart(food: CartItem) {
 
         val alreadyInCartItem = alreadyInCart(food = food)
 
@@ -98,7 +95,7 @@ class RestaurantMenuViewModel @Inject constructor(
             )
         else {
 
-            val items = _state.value.cart.items + food.toCartItem()
+            val items = _state.value.cart.items + food
 
             _state.value = _state.value.copy(
                 cart = _state.value.cart.copy(
@@ -118,7 +115,7 @@ class RestaurantMenuViewModel @Inject constructor(
         )
     }
 
-    private fun alreadyInCart(food: Food): CartItem? {
+    private fun alreadyInCart(food: CartItem): CartItem? {
         var currentCartItem: CartItem? = null
 
         _state.value.cart.items.forEach { cartItem ->
@@ -181,6 +178,10 @@ class RestaurantMenuViewModel @Inject constructor(
 
         cart.forEach { food ->
             total += (food.price * food.quantity)
+
+            food.suggestionsAddedInCart.forEach { suggestion ->
+                total += suggestion.price
+            }
         }
 
         return total
@@ -200,5 +201,19 @@ class RestaurantMenuViewModel @Inject constructor(
         _state.value = _state.value.copy(
             filteredFoodList = filteredFood
         )
+    }
+
+    fun isInCart(food: Food): CartItem? {
+        var cartItem by mutableStateOf<CartItem?>(null)
+
+        if (_state.value.cart.items.isNotEmpty())
+            _state.value.cart.items.map { currentCartItem ->
+                if (food.name == currentCartItem.name) {
+                    cartItem = currentCartItem
+                }
+            }
+        else cartItem = null
+
+        return cartItem
     }
 }

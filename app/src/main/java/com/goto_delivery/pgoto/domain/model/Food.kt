@@ -5,5 +5,5 @@ data class Food(
     val ingredients: String = "",
     val price: Double = 0.0,
     val imageUrl: String? = null,
-    val suggestions: List<Food> = emptyList()
+    val suggestions: List<Food> = emptyList(),
 )
