@@ -13,5 +13,7 @@ sealed class UiEvent {
 
     object PopBackStack : UiEvent()
 
+    object BottomSheet : UiEvent()
+
     data class Toast(val message: String) : UiEvent()
 }

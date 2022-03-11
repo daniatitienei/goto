@@ -41,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
@@ -52,6 +53,7 @@ import com.goto_delivery.pgoto.domain.model.MenuCategory
 import com.goto_delivery.pgoto.ui.theme.GotoTheme
 import com.goto_delivery.pgoto.ui.utils.Constants
 import com.goto_delivery.pgoto.ui.utils.UiEvent
+import com.goto_delivery.pgoto.ui.utils.WindowInfo
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
 import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
@@ -72,26 +74,33 @@ fun RestaurantMenu(
         mutableStateOf("")
     }
 
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    )
+
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.PopBackStack -> {
                     onPopBackStack(event)
                 }
+                is UiEvent.BottomSheet -> {
+                    if (bottomSheetScaffoldState.bottomSheetState.isExpanded)
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    else
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                }
                 else -> Unit
             }
         }
     }
 
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
-    )
 
     var latestClickedFood by remember {
         mutableStateOf<Food?>(null)
     }
-
-    val coroutineScope = rememberCoroutineScope()
 
     if (state.isLoading)
         Box(
@@ -111,18 +120,9 @@ fun RestaurantMenu(
                     InspectFoodBottomSheet(
                         food = food,
                         currency = state.restaurant.currency,
-                        onClose = {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
-                        },
                         onAddToCartClick = {
                             viewModel.onEvent(RestaurantMenuEvents.OnAddToCartClick(it))
-
-                            coroutineScope.launch {
-                                if (bottomSheetScaffoldState.bottomSheetState.isExpanded)
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
+                            viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
 
                             latestClickedFood = null
                         },
@@ -131,6 +131,7 @@ fun RestaurantMenu(
                 }
             },
             sheetPeekHeight = 0.dp,
+            sheetElevation = 0.dp
         ) {
             Scaffold(
                 bottomBar = {
@@ -323,10 +324,7 @@ fun RestaurantMenu(
                             currency = state.restaurant.currency,
                             onClick = {
                                 latestClickedFood = food
-
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.expand()
-                                }
+                                viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
                             },
                             isInCart = isInCart,
                             quantity = currentCartItem?.quantity,
@@ -336,77 +334,61 @@ fun RestaurantMenu(
 
                     /* Menu */
                     items(state.restaurant.menu) { menuCategory ->
-                        FoodCategory(
-                            menuCategory = menuCategory,
-                            currency = state.restaurant.currency,
-                            onFoodCardClick = { food ->
-                                latestClickedFood = food
 
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.expand()
-                                }
-                            },
-                            cart = state.cart,
-                            onEvent = viewModel::onEvent
+                        /* Category name */
+                        Text(
+                            text = menuCategory.name,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        /* Food from that category */
+                        repeat(menuCategory.food.size) { index ->
+
+                            val food = menuCategory.food[index]
+
+                            var isInCart by remember {
+                                mutableStateOf(false)
+                            }
+
+                            var currentCartItem by remember {
+                                mutableStateOf<CartItem?>(null)
+                            }
+
+                            if (state.cart.items.isNotEmpty())
+                                state.cart.items.map { cartItem ->
+                                    if (food.name == cartItem.name) {
+                                        isInCart = true
+                                        currentCartItem = cartItem
+                                    }
+                                }
+                            else isInCart = false
+
+                            FoodCard(
+                                food = food,
+                                currency = state.restaurant.currency,
+                                onClick = {
+                                    latestClickedFood = food
+
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.expand()
+                                    }
+                                },
+                                isInCart = isInCart,
+                                quantity = currentCartItem?.quantity,
+                                onEvent = viewModel::onEvent
+                            )
+
+                            if (index != menuCategory.food.size)
+                                Spacer(modifier = Modifier.height(10.dp))
+                        }
                     }
                 }
             }
         }
-}
-
-@Composable
-private fun FoodCategory(
-    menuCategory: MenuCategory,
-    cart: Cart,
-    currency: String,
-    onFoodCardClick: (Food) -> Unit,
-    onEvent: (RestaurantMenuEvents) -> Unit
-) {
-    /* Category name */
-    Text(
-        text = menuCategory.name,
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary
-    )
-
-    Spacer(modifier = Modifier.height(15.dp))
-
-    /* Food from that category */
-    repeat(menuCategory.food.size) { index ->
-
-        val food = menuCategory.food[index]
-
-        var isInCart by remember {
-            mutableStateOf(false)
-        }
-
-        var currentCartItem by remember {
-            mutableStateOf<CartItem?>(null)
-        }
-
-        if (cart.items.isNotEmpty())
-            cart.items.map { cartItem ->
-                if (food.name == cartItem.name) {
-                    isInCart = true
-                    currentCartItem = cartItem
-                }
-            }
-        else isInCart = false
-
-        FoodCard(
-            food = food,
-            currency = currency,
-            onClick = onFoodCardClick,
-            isInCart = isInCart,
-            quantity = currentCartItem?.quantity,
-            onEvent = onEvent
-        )
-
-        if (index != menuCategory.food.size)
-            Spacer(modifier = Modifier.height(10.dp))
-    }
 }
 
 @Composable
@@ -431,7 +413,10 @@ private fun FoodCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
+                /* Food name */
                 Text(text = food.name, style = MaterialTheme.typography.titleSmall)
+
+                /* Food ingredients */
                 if (food.ingredients.isNotEmpty())
                     Text(
                         text = food.ingredients,
@@ -439,6 +424,7 @@ private fun FoodCard(
                     )
             }
 
+            /* Price and plus button */
             Row(
                 modifier = Modifier.weight(0.9f),
                 verticalAlignment = Alignment.CenterVertically,
@@ -469,6 +455,7 @@ private fun FoodCard(
             }
         }
 
+        /* Increase and decrease quantity if the food is in cart */
         AnimatedVisibility(visible = isInCart) {
             Column(
                 modifier = Modifier
@@ -556,9 +543,8 @@ private fun FoodCardPreviewDark() {
 @Composable
 fun InspectFoodBottomSheet(
     food: Food,
-    onClose: () -> Unit,
     currency: String,
-    onAddToCartClick: (List<Food>) -> Unit,
+    onAddToCartClick: (Food) -> Unit,
     onEvent: (RestaurantMenuEvents) -> Unit
 ) {
     val windowInfo = rememberWindowInfo()
@@ -578,7 +564,11 @@ fun InspectFoodBottomSheet(
                     .padding(bottom = 10.dp),
             ) {
                 Button(
-                    onClick = { onAddToCartClick(cart) },
+                    onClick = {
+                        cart.forEach {
+                            onAddToCartClick(it)
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text(
@@ -593,40 +583,13 @@ fun InspectFoodBottomSheet(
             contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())
         ) {
             item {
-                Box {
-                    food.imageUrl?.let { imageUrl ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(windowInfo.screenHeightDp / 3)
-                                .clip(RoundedCornerShape(bottomEnd = 20.dp, bottomStart = 20.dp))
-                        ) {
-                            Image(
-                                painter = rememberImagePainter(data = imageUrl),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-
-                        }
+                ImageOverflowedByTopBar(
+                    food = food,
+                    imageHeightDp = windowInfo.screenHeightDp / 3,
+                    onClose = {
+                        onEvent(RestaurantMenuEvents.ToggleBottomSheet)
                     }
-                    SmallTopAppBar(
-                        title = {},
-                        navigationIcon = {
-                            IconButton(onClick = onClose) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = stringResource(
-                                        id = R.string.close
-                                    )
-                                )
-                            }
-                        },
-                        colors = smallTopAppBarColors(
-                            containerColor = Color.Transparent
-                        )
-                    )
-                }
+                )
             }
 
             item {
@@ -636,6 +599,7 @@ fun InspectFoodBottomSheet(
                         .padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    /* Food name */
                     Text(
                         text = food.name,
                         textAlign = TextAlign.Center,
@@ -644,6 +608,7 @@ fun InspectFoodBottomSheet(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    /* Food ingredients */
                     Text(
                         text = food.ingredients,
                         textAlign = TextAlign.Justify,
@@ -652,6 +617,7 @@ fun InspectFoodBottomSheet(
                 }
             }
 
+            /* Suggestions */
             item {
                 if (food.suggestions.isNotEmpty())
                     Column(
@@ -674,7 +640,7 @@ fun InspectFoodBottomSheet(
                                 food = currentFoodSuggestion,
                                 currency = currency,
                                 onClick = {
-                                    cart.add(food)
+                                    cart.add(currentFoodSuggestion)
                                 },
                                 onEvent = onEvent
                             )
@@ -688,6 +654,48 @@ fun InspectFoodBottomSheet(
     }
 }
 
+@Composable
+private fun ImageOverflowedByTopBar(
+    food: Food,
+    imageHeightDp: Dp,
+    onClose: () -> Unit
+) {
+    Box {
+        food.imageUrl?.let { imageUrl ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(imageHeightDp)
+                    .clip(RoundedCornerShape(bottomEnd = 20.dp, bottomStart = 20.dp))
+            ) {
+                Image(
+                    painter = rememberImagePainter(data = imageUrl),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+            }
+        }
+        SmallTopAppBar(
+            title = {},
+            navigationIcon = {
+                IconButton(onClick = onClose) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = stringResource(
+                            id = R.string.close
+                        )
+                    )
+                }
+            },
+            colors = smallTopAppBarColors(
+                containerColor = Color.Transparent
+            )
+        )
+    }
+}
+
 @ExperimentalMaterial3Api
 @Preview(showBackground = true)
 @Composable
@@ -696,7 +704,6 @@ private fun InspectFoodBottomSheetLight() {
         InspectFoodBottomSheet(
             currency = "RON",
             food = Constants.food,
-            onClose = {},
             onEvent = {},
             onAddToCartClick = {}
         )
@@ -711,7 +718,6 @@ private fun InspectFoodBottomSheetDark() {
         InspectFoodBottomSheet(
             currency = "RON",
             food = Constants.food,
-            onClose = {},
             onAddToCartClick = {},
             onEvent = {}
         )

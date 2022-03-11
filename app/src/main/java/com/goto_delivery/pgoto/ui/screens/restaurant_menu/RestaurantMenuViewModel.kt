@@ -3,6 +3,7 @@ package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -64,13 +65,7 @@ class RestaurantMenuViewModel @Inject constructor(
                 emitEvent(UiEvent.PopBackStack)
             }
             is RestaurantMenuEvents.OnAddToCartClick -> {
-                val newCartItems = _state.value.cart.items + event.foodList.map { it.toCartItem() }
-                _state.value = _state.value.copy(
-                    cart = _state.value.cart.copy(
-                        items = newCartItems,
-                        total = calculateCartTotal(cart = newCartItems)
-                    )
-                )
+                addToCart(event.food)
             }
             is RestaurantMenuEvents.OnSearchFood -> {
                 filterFood(text = event.value)
@@ -81,7 +76,57 @@ class RestaurantMenuViewModel @Inject constructor(
             is RestaurantMenuEvents.OnDecreaseQuantity -> {
                 decreaseQuantity(event.food.toCartItem())
             }
+            is RestaurantMenuEvents.ToggleBottomSheet -> {
+                emitEvent(UiEvent.BottomSheet)
+            }
         }
+    }
+
+    private fun addToCart(food: Food) {
+
+        val alreadyInCartItem = alreadyInCart(food = food)
+
+        if (alreadyInCartItem != null)
+            _state.value = _state.value.copy(
+                cart = _state.value.cart.copy(
+                    items = _state.value.cart.items.map { cartItem ->
+                        if (cartItem == alreadyInCartItem)
+                            cartItem.copy(quantity = cartItem.quantity + 1)
+                        else cartItem
+                    }
+                )
+            )
+        else {
+
+            val items = _state.value.cart.items + food.toCartItem()
+
+            _state.value = _state.value.copy(
+                cart = _state.value.cart.copy(
+                    items = items,
+                    total = calculateCartTotal(items)
+                )
+            )
+        }
+
+        val newCartItems = _state.value.cart.items
+
+        _state.value = _state.value.copy(
+            cart = _state.value.cart.copy(
+                items = newCartItems,
+                total = calculateCartTotal(cart = newCartItems)
+            )
+        )
+    }
+
+    private fun alreadyInCart(food: Food): CartItem? {
+        var currentCartItem: CartItem? = null
+
+        _state.value.cart.items.forEach { cartItem ->
+            if (cartItem.name == food.name)
+                currentCartItem = cartItem
+        }
+
+        return currentCartItem
     }
 
     private fun emitEvent(event: UiEvent) {
@@ -110,9 +155,7 @@ class RestaurantMenuViewModel @Inject constructor(
 
         mutableCart.forEach {
             if (it.name == cartItem.name) {
-                val currentQuantity = it.quantity - 1
-
-                if (currentQuantity <= 0)
+                if (it.quantity <= 1)
                     mutableCart.remove(it)
             }
         }
