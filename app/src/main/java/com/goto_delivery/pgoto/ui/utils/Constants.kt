@@ -8,7 +8,19 @@ object Constants {
     val food = Food(
         name = "Pizza Quatro Stagioni",
         price = 25.00,
-        ingredients = "Sos de rosii, salam, ciuperci, sunca"
+        ingredients = "Sos de rosii, salam, ciuperci, sunca",
+        suggestions = listOf(
+            Food(
+                name = "Sos de usturoi",
+                ingredients = "Usturoi, smantana 400g",
+                price = 5.00
+            ),
+            Food(
+                name = "Sos de rosii",
+                ingredients = "Rosii 200g",
+                price = 5.00
+            )
+        )
     )
     val restaurant = Restaurant(
         name = "Coda-Vinci",

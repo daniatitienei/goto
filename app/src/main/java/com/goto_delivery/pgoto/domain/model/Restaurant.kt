@@ -11,5 +11,6 @@ data class Restaurant(
     val deliveryFee: Double = 0.0,
     val categories: List<String> = emptyList(),
     val menu: List<MenuCategory> = emptyList(),
-    val isOpen: Boolean = false
+    val isOpen: Boolean = false,
+    val packFee: Double = 0.0
 )

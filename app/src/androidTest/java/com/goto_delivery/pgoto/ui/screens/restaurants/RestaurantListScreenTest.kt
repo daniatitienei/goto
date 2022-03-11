@@ -47,7 +47,9 @@ class RestaurantListScreenTest {
                     startDestination = Screen.RestaurantList.route
                 ) {
                     composable(Screen.RestaurantList.route) {
-                        RestaurantListScreen()
+                        RestaurantListScreen(
+                            onNavigate = {}
+                        )
                     }
                 }
             }

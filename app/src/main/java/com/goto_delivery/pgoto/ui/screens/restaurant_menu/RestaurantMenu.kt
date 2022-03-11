@@ -1,41 +1,56 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowBackIosNew
-import androidx.compose.material3.*
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberImagePainter
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.domain.model.CartItem
 import com.goto_delivery.pgoto.domain.model.Food
-import com.goto_delivery.pgoto.domain.model.MenuCategory
-import com.goto_delivery.pgoto.ui.theme.GotoTheme
-import com.goto_delivery.pgoto.ui.utils.Constants
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.components.SearchBar
+import com.goto_delivery.pgoto.ui.utils.mappers.toCartItem
+import com.goto_delivery.pgoto.ui.utils.rememberWindowInfo
 import com.goto_delivery.pgoto.ui.utils.transformations.twoDecimals
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@ExperimentalMaterialApi
+@ExperimentalFoundationApi
 @ExperimentalMaterial3Api
 @Composable
 fun RestaurantMenu(
@@ -48,15 +63,32 @@ fun RestaurantMenu(
         mutableStateOf("")
     }
 
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    )
+
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.PopBackStack -> {
                     onPopBackStack(event)
                 }
+                is UiEvent.BottomSheet -> {
+                    if (bottomSheetScaffoldState.bottomSheetState.isExpanded)
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    else
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                }
                 else -> Unit
             }
         }
+    }
+
+
+    var latestClickedFood by remember {
+        mutableStateOf<Food?>(null)
     }
 
     if (state.isLoading)
@@ -70,261 +102,715 @@ fun RestaurantMenu(
             )
         }
     else
-        Scaffold(
-            topBar = {
-                SmallTopAppBar(
-                    title = {
-                        SearchBar(
-                            value = searchBarValue,
-                            onValueChange = { searchBarValue = it },
-                            placeholder = stringResource(id = R.string.search_food),
-                            onSearch = {
-                                viewModel.onEvent(RestaurantMenuEvents.OnSearchFood(value = searchBarValue))
-                            },
-                            onClear = { searchBarValue = "" }
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                viewModel.onEvent(RestaurantMenuEvents.OnPopBackStack)
-                            }
+        BottomSheetScaffold(
+            scaffoldState = bottomSheetScaffoldState,
+            sheetContent = {
+                latestClickedFood?.let { food ->
+                    InspectFoodBottomSheet(
+                        food = food,
+                        currency = state.restaurant.currency,
+                        onAddToCartClick = {
+                            viewModel.onEvent(RestaurantMenuEvents.OnAddToCartClick(it))
+                            viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
+
+                            latestClickedFood = null
+                        },
+                        onEvent = viewModel::onEvent,
+                        packFee = state.restaurant.packFee
+                    )
+                }
+            },
+            sheetPeekHeight = 0.dp,
+            sheetElevation = 0.dp
+        ) {
+            Scaffold(
+                bottomBar = {
+                    if (state.cart.items.isNotEmpty())
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(align = Alignment.CenterHorizontally)
+                                .padding(bottom = 10.dp),
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ArrowBackIosNew,
-                                contentDescription = stringResource(
-                                    id = R.string.go_back
+                            Button(
+                                onClick = { /*TODO*/ },
+                                modifier = Modifier.fillMaxWidth(0.8f)
+                            ) {
+                                Text(
+                                    text = "${stringResource(id = R.string.buy_for)} ${state.cart.total.twoDecimals()} ${state.restaurant.currency}",
                                 )
+                            }
+                        }
+                },
+                topBar = {
+                    SmallTopAppBar(
+                        title = {
+                            SearchBar(
+                                value = searchBarValue,
+                                onValueChange = { searchBarValue = it },
+                                placeholder = stringResource(id = R.string.search_food),
+                                onSearch = {
+                                    if (searchBarValue.isNotEmpty())
+                                        viewModel.onEvent(RestaurantMenuEvents.OnSearchFood(value = searchBarValue))
+                                },
+                                onClear = { searchBarValue = "" }
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    viewModel.onEvent(RestaurantMenuEvents.OnPopBackStack)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ArrowBackIosNew,
+                                    contentDescription = stringResource(
+                                        id = R.string.go_back
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                LazyColumn(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                    contentPadding = PaddingValues(
+                        bottom = innerPadding.calculateBottomPadding() + 10.dp,
+                        top = 10.dp
+                    )
+                ) {
+                    /* Restaurant title and info */
+                    item {
+                        /* Restaurant name */
+                        Text(
+                            text = state.restaurant.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        /* Restaurant info */
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(align = Alignment.CenterHorizontally)
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceAround,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            ) {
+                                /* Rating */
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_star_circle),
+                                        contentDescription = stringResource(id = R.string.rating),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(text = state.restaurant.rating.twoDecimals())
+                                }
+
+                                /* Delivery fee */
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_courier_circle),
+                                        contentDescription = stringResource(id = R.string.delivery_fee),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = if (state.restaurant.deliveryFee == 0.0)
+                                            stringResource(id = R.string.free)
+                                        else state.restaurant.deliveryFee.twoDecimals()
+                                    )
+                                }
+
+                                /* Estimated delivery time */
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_time),
+                                        contentDescription = stringResource(id = R.string.estimated_delivery_time),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(text = state.restaurant.estimatedDeliveryTime)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth(align = Alignment.CenterHorizontally)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .height(1.dp)
+                                    .background(color = MaterialTheme.colorScheme.primary)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    /* Search results */
+                    item {
+                        AnimatedVisibility(
+                            visible = state.filteredFoodList.isNotEmpty(),
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.search_results),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-                )
-            }
-        ) {
-            LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(15.dp),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
-            ) {
-                /* Restaurant title and info */
-                item {
-                    /* Restaurant name */
-                    Text(
-                        text = state.restaurant.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center
-                    )
 
-                    Spacer(modifier = Modifier.height(15.dp))
+                    items(state.filteredFoodList) { food ->
+                        val currentCartItem = viewModel.isInCart(food)
 
-                    /* Restaurant info */
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceAround,
-                            modifier = Modifier.fillMaxWidth(0.9f)
-                        ) {
-                            /* Rating */
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_star_circle),
-                                    contentDescription = stringResource(id = R.string.rating),
-                                    modifier = Modifier.size(24.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(text = state.restaurant.rating.twoDecimals())
-                            }
-
-                            /* Delivery fee */
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_courier_circle),
-                                    contentDescription = stringResource(id = R.string.delivery_fee),
-                                    modifier = Modifier.size(24.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = if (state.restaurant.deliveryFee == 0.0)
-                                        stringResource(id = R.string.free)
-                                    else state.restaurant.deliveryFee.twoDecimals()
-                                )
-                            }
-
-                            /* Estimated delivery time */
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_time),
-                                    contentDescription = stringResource(id = R.string.estimated_delivery_time),
-                                    modifier = Modifier.size(24.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(text = state.restaurant.estimatedDeliveryTime)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(align = Alignment.CenterHorizontally)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .height(1.dp)
-                                .background(color = MaterialTheme.colorScheme.primary)
+                        FoodCard(
+                            food = food,
+                            currency = state.restaurant.currency,
+                            onClick = {
+                                latestClickedFood = food
+                                viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
+                            },
+                            cartItem = currentCartItem,
+                            onEvent = viewModel::onEvent,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+                    /* Menu */
+                    items(state.restaurant.menu) { menuCategory ->
 
-                /* Search results */
-                item {
-                    AnimatedVisibility(
-                        visible = state.filteredFoodList.isNotEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
+                        /* Category name */
                         Text(
-                            text = stringResource(id = R.string.search_results),
+                            text = menuCategory.name,
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        /* Food from that category */
+                        repeat(menuCategory.food.size) { index ->
+
+                            val food = menuCategory.food[index]
+
+                            val currentCartItem = viewModel.isInCart(food)
+
+                            FoodCard(
+                                food = food,
+                                currency = state.restaurant.currency,
+                                onClick = {
+                                    latestClickedFood = food
+
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.expand()
+                                    }
+                                },
+                                cartItem = currentCartItem,
+                                onEvent = viewModel::onEvent
+                            )
+
+                            if (index != menuCategory.food.size)
+                                Spacer(modifier = Modifier.height(10.dp))
+                        }
                     }
-                }
-
-                items(state.filteredFoodList) { food ->
-                    FoodCard(
-                        food = food,
-                        currency = state.restaurant.currency,
-                        onClick = { /*TODO*/ },
-                    )
-                }
-
-                /* Menu */
-                items(state.restaurant.menu) { menuCategory ->
-                    FoodCategory(
-                        menuCategory = menuCategory,
-                        currency = state.restaurant.currency,
-                        onFoodCardClick = { /*TODO*/ },
-                    )
                 }
             }
         }
 }
 
 @Composable
-private fun FoodCategory(
-    menuCategory: MenuCategory,
+private fun FoodCard(
+    food: Food,
     currency: String,
-    onFoodCardClick: (Food) -> Unit
+    onClick: (Food) -> Unit,
+    cartItem: CartItem? = null,
+    onEvent: (RestaurantMenuEvents) -> Unit
 ) {
-    /* Category name */
-    Text(
-        text = menuCategory.name,
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary
-    )
+    Column(
+        modifier = Modifier.animateContentSize(tween())
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick(food) }
+                .padding(vertical = 10.dp, horizontal = 20.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                /* Food name */
+                Text(text = food.name, style = MaterialTheme.typography.titleSmall)
 
-    Spacer(modifier = Modifier.height(15.dp))
+                /* Food ingredients */
+                if (food.ingredients.isNotEmpty())
+                    Text(
+                        text = food.ingredients,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+            }
 
-    /* Food from that category */
-    repeat(menuCategory.food.size) { index ->
+            /* Price and plus button */
+            Row(
+                modifier = Modifier.weight(0.9f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(5.dp)
+                ) {
+                    Text(text = "${food.price.twoDecimals()} $currency")
+                }
 
-        val food = menuCategory.food[index]
+                Spacer(modifier = Modifier.width(5.dp))
 
-        FoodCard(
-            food = food,
-            currency = currency,
-            onClick = onFoodCardClick,
-        )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = stringResource(id = R.string.inspect_food)
+                    )
+                }
+            }
+        }
 
-        if (index != menuCategory.food.size)
-            Spacer(modifier = Modifier.height(10.dp))
+        /* Increase and decrease quantity if the food is in cart */
+        AnimatedVisibility(visible = cartItem != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+            ) {
+                cartItem?.let {
+                    FoodAddedToCart(
+                        quantity = cartItem.quantity,
+                        food = food,
+                        onDecreaseQuantityClick = {
+                            onEvent(RestaurantMenuEvents.OnDecreaseQuantity(food = food))
+                        },
+                        onIncreaseQuantityClick = {
+                            onEvent(RestaurantMenuEvents.OnIncreaseQuantity(food = food))
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    var suggestions = ""
+
+                    cartItem.suggestionsAddedInCart.forEachIndexed { index, food ->
+                        suggestions += food.name
+
+                        if (index != cartItem.suggestionsAddedInCart.size - 1)
+                            suggestions += ", "
+                    }
+
+                    Text(text = suggestions)
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun FoodCard(food: Food, currency: String, onClick: (Food) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(food) },
-        verticalAlignment = Alignment.Bottom
+private fun FoodAddedToCart(
+    quantity: Int,
+    food: Food,
+    onDecreaseQuantityClick: () -> Unit,
+    onIncreaseQuantityClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(text = food.name, style = MaterialTheme.typography.titleSmall)
-            Text(
-                text = food.ingredients,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
-        }
+        Text(text = "${quantity}x ${food.name}")
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         Row(
-            modifier = Modifier.weight(0.9f),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
         ) {
+            /* Decrease quantity button */
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(5.dp)
-            ) {
-                Text(text = "${food.price.twoDecimals()} $currency")
-            }
-
-            Spacer(modifier = Modifier.width(5.dp))
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.5f))
+                    .clickable {
+                        onDecreaseQuantityClick()
+                    }
                     .padding(5.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Add,
-                    contentDescription = stringResource(id = R.string.inspect_food)
+                    Icons.Rounded.Remove,
+                    contentDescription = stringResource(id = R.string.decrease_quantity)
+                )
+            }
+
+            /* Increase quantity button */
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.5f))
+                    .clickable {
+                        onIncreaseQuantityClick()
+                    }
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = stringResource(id = R.string.increase_quantity)
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+@ExperimentalMaterial3Api
 @Composable
-private fun FoodCardPreview() {
-    GotoTheme {
-        FoodCard(
-            food = Constants.food,
-            currency = "RON",
-            onClick = {}
+fun InspectFoodBottomSheet(
+    food: Food,
+    currency: String,
+    packFee: Double,
+    onAddToCartClick: (CartItem) -> Unit,
+    onEvent: (RestaurantMenuEvents) -> Unit
+) {
+    val windowInfo = rememberWindowInfo()
+
+    /* To store locally food from bottom sheet */
+    val suggestionsCart = remember {
+        mutableStateListOf<Food>()
+    }
+
+    var cartTotal by remember {
+        mutableStateOf(food.price)
+    }
+
+    var isPackingSelected by remember {
+        mutableStateOf(false)
+    }
+
+    /* Total after suggestion cart size changes */
+    LaunchedEffect(key1 = suggestionsCart.size) {
+        cartTotal = food.price
+
+        suggestionsCart.forEach { item ->
+            cartTotal += item.price
+        }
+    }
+
+    val context = LocalContext.current
+
+    Scaffold(
+        bottomBar = {
+            /* Add to cart button */
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(align = Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
+            ) {
+                Button(
+                    onClick = {
+                        onAddToCartClick(
+                            food.toCartItem().copy(suggestionsAddedInCart = suggestionsCart)
+                        )
+                    },
+                    enabled = isPackingSelected,
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text(
+                        text = "${stringResource(id = R.string.add_for)} ${cartTotal.twoDecimals()} $currency",
+                    )
+                }
+            }
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())
+        ) {
+            item {
+                ImageOverflowedByTopBar(
+                    food = food,
+                    imageHeightDp = windowInfo.screenHeightDp / 3,
+                    onClose = {
+                        onEvent(RestaurantMenuEvents.ToggleBottomSheet)
+                    }
+                )
+            }
+
+            /* Food info */
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    /* Food name */
+                    Text(
+                        text = food.name,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    /* Food ingredients */
+                    Text(
+                        text = food.ingredients,
+                        textAlign = TextAlign.Justify,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.7f),
+                    )
+                }
+            }
+
+            /* Add pack */
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                ) {
+                    Box(modifier = Modifier.weight(1.5f)) {
+                        Text(
+                            text = stringResource(id = R.string.add_pack),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentWidth(align = Alignment.End),
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.compulsory),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(8.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                SelectFoodCard(
+                    name = stringResource(id = R.string.pack),
+                    price = packFee,
+                    onClick = {
+                        if (isPackingSelected)
+                            suggestionsCart.remove(
+                                Food(
+                                    name = context.getString(R.string.pack),
+                                    price = packFee
+                                )
+                            )
+                        else
+                            suggestionsCart.add(
+                                Food(
+                                    name = context.getString(R.string.pack),
+                                    price = packFee
+                                )
+                            )
+
+                        isPackingSelected = !isPackingSelected
+                    },
+                    selected = isPackingSelected,
+                    currency = currency
+                )
+            }
+
+            /* Suggestions */
+            item {
+                if (food.suggestions.isNotEmpty())
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.suggestions),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        repeat(food.suggestions.size) { index ->
+
+                            val currentSuggestion = food.suggestions[index]
+
+                            val isInCart = suggestionsCart.contains(currentSuggestion)
+
+                            SelectFoodCard(
+                                name = currentSuggestion.name,
+                                price = currentSuggestion.price,
+                                onClick = {
+                                    if (isInCart)
+                                        suggestionsCart.remove(currentSuggestion)
+                                    else
+                                        suggestionsCart.add(currentSuggestion)
+                                },
+                                selected = isInCart,
+                                currency = currency
+                            )
+
+                            if (index != food.suggestions.size)
+                                Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectFoodCard(
+    name: String,
+    price: Double,
+    onClick: () -> Unit,
+    selected: Boolean,
+    currency: String
+) {
+
+    val icon = if (selected) Icons.Rounded.Remove else Icons.Rounded.Add
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
+    )
+
+    val iconColor by animateColorAsState(
+        targetValue = if (!selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row {
+            Text(text = name)
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "+ ${price.twoDecimals()} $currency",
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(backgroundColor)
+                    .clickable { onClick() }
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconColor
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageOverflowedByTopBar(
+    food: Food,
+    imageHeightDp: Dp,
+    onClose: () -> Unit
+) {
+    Box {
+        food.imageUrl?.let { imageUrl ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(imageHeightDp)
+                    .clip(RoundedCornerShape(bottomEnd = 20.dp, bottomStart = 20.dp))
+            ) {
+                Image(
+                    painter = rememberImagePainter(data = imageUrl),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+            }
+        }
+        SmallTopAppBar(
+            title = {},
+            navigationIcon = {
+                IconButton(onClick = onClose) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = stringResource(
+                            id = R.string.close
+                        )
+                    )
+                }
+            },
+            colors = smallTopAppBarColors(
+                containerColor = Color.Transparent
+            )
         )
     }
 }
