@@ -1,5 +1,6 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
+import android.app.Application
 import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -17,11 +18,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.goto_delivery.pgoto.R
 
 @HiltViewModel
 class RestaurantMenuViewModel @Inject constructor(
     private val useCases: RestaurantUseCases,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val application: Application
 ) : ViewModel() {
 
     private val _state = mutableStateOf(RestaurantMenuState())
@@ -73,9 +76,6 @@ class RestaurantMenuViewModel @Inject constructor(
             is RestaurantMenuEvents.OnDecreaseQuantity -> {
                 decreaseQuantity(event.food.toCartItem())
             }
-            is RestaurantMenuEvents.ToggleBottomSheet -> {
-                emitEvent(UiEvent.BottomSheet)
-            }
         }
     }
 
@@ -88,7 +88,10 @@ class RestaurantMenuViewModel @Inject constructor(
                 cart = _state.value.cart.copy(
                     items = _state.value.cart.items.map { cartItem ->
                         if (cartItem == alreadyInCartItem)
-                            cartItem.copy(quantity = cartItem.quantity + 1)
+                            cartItem.copy(
+                                quantity = cartItem.quantity + 1,
+                                suggestionsAddedInCart = food.suggestionsAddedInCart
+                            )
                         else cartItem
                     }
                 )

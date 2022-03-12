@@ -9,7 +9,6 @@ sealed class RestaurantMenuEvents {
 
     data class OnSearchFood(val value: String) : RestaurantMenuEvents()
 
-    object ToggleBottomSheet : RestaurantMenuEvents()
 
     data class OnIncreaseQuantity(val food: Food) : RestaurantMenuEvents()
     data class OnDecreaseQuantity(val food: Food) : RestaurantMenuEvents()
