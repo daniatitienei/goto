@@ -61,4 +61,6 @@
     <string name="pack">Ambalaj</string>
     <string name="compulsory">Compulsory</string>
     <string name="add_pack">Add pack</string>
+    <string name="selected">Selected</string>
+    <string name="unselected">Unselected</string>
 </resources>

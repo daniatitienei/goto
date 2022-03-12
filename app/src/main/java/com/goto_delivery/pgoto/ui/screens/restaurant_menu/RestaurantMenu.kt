@@ -606,62 +606,64 @@ fun InspectFoodBottomSheet(
 
             /* Add pack */
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                ) {
-                    Box(modifier = Modifier.weight(1.5f)) {
-                        Text(
-                            text = stringResource(id = R.string.add_pack),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                if (packFee > 0.0) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                    ) {
+                        Box(modifier = Modifier.weight(1.5f)) {
+                            Text(
+                                text = stringResource(id = R.string.add_pack),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .wrapContentWidth(align = Alignment.End),
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.compulsory),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .padding(8.dp)
+                            )
+                        }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .wrapContentWidth(align = Alignment.End),
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.compulsory),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(15.dp))
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(8.dp)
-                        )
-                    }
+                    SelectFoodCard(
+                        name = stringResource(id = R.string.pack),
+                        price = packFee,
+                        onClick = {
+                            if (isPackingSelected)
+                                suggestionsCart.remove(
+                                    Food(
+                                        name = context.getString(R.string.pack),
+                                        price = packFee
+                                    )
+                                )
+                            else
+                                suggestionsCart.add(
+                                    Food(
+                                        name = context.getString(R.string.pack),
+                                        price = packFee
+                                    )
+                                )
+
+                            isPackingSelected = !isPackingSelected
+                        },
+                        selected = isPackingSelected,
+                        currency = currency
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                SelectFoodCard(
-                    name = stringResource(id = R.string.pack),
-                    price = packFee,
-                    onClick = {
-                        if (isPackingSelected)
-                            suggestionsCart.remove(
-                                Food(
-                                    name = context.getString(R.string.pack),
-                                    price = packFee
-                                )
-                            )
-                        else
-                            suggestionsCart.add(
-                                Food(
-                                    name = context.getString(R.string.pack),
-                                    price = packFee
-                                )
-                            )
-
-                        isPackingSelected = !isPackingSelected
-                    },
-                    selected = isPackingSelected,
-                    currency = currency
-                )
             }
 
             /* Suggestions */
@@ -765,7 +767,7 @@ private fun SelectFoodCard(
             ) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = null,
+                    contentDescription = stringResource(id = if (selected) R.string.selected else R.string.unselected),
                     tint = iconColor
                 )
             }
