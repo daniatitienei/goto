@@ -75,12 +75,6 @@ fun RestaurantMenu(
                 is UiEvent.PopBackStack -> {
                     onPopBackStack(event)
                 }
-                is UiEvent.BottomSheet -> {
-                    if (bottomSheetScaffoldState.bottomSheetState.isExpanded)
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    else
-                        bottomSheetScaffoldState.bottomSheetState.expand()
-                }
                 else -> Unit
             }
         }
@@ -106,17 +100,33 @@ fun RestaurantMenu(
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
                 latestClickedFood?.let { food ->
+
+                    var currentCartItem: CartItem? = null
+
+                    state.cart.items.forEach {
+                        if (it.name == food.name) {
+                            currentCartItem = it
+                        }
+                    }
+
                     InspectFoodBottomSheet(
                         food = food,
                         currency = state.restaurant.currency,
                         onAddToCartClick = {
                             viewModel.onEvent(RestaurantMenuEvents.OnAddToCartClick(it))
-                            viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
+
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                            }
 
                             latestClickedFood = null
                         },
-                        onEvent = viewModel::onEvent,
-                        packFee = state.restaurant.packFee
+                        onClose = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                            }
+                        },
+                        cartItem = currentCartItem
                     )
                 }
             },
@@ -227,7 +237,6 @@ fun RestaurantMenu(
                                         contentDescription = stringResource(id = R.string.delivery_fee),
                                         modifier = Modifier.size(24.dp),
                                         tint = MaterialTheme.colorScheme.primary
-
                                     )
 
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -235,7 +244,7 @@ fun RestaurantMenu(
                                     Text(
                                         text = if (state.restaurant.deliveryFee == 0.0)
                                             stringResource(id = R.string.free)
-                                        else state.restaurant.deliveryFee.twoDecimals()
+                                        else "${state.restaurant.deliveryFee.twoDecimals()} ${state.restaurant.currency}"
                                     )
                                 }
 
@@ -299,7 +308,9 @@ fun RestaurantMenu(
                             currency = state.restaurant.currency,
                             onClick = {
                                 latestClickedFood = food
-                                viewModel.onEvent(RestaurantMenuEvents.ToggleBottomSheet)
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.expand()
+                                }
                             },
                             cartItem = currentCartItem,
                             onEvent = viewModel::onEvent,
@@ -429,21 +440,24 @@ private fun FoodCard(
                         },
                         onIncreaseQuantityClick = {
                             onEvent(RestaurantMenuEvents.OnIncreaseQuantity(food = food))
-                        }
+                        },
+                        currency = currency
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    if (cartItem.suggestionsAddedInCart.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    var suggestions = ""
+                        var suggestions = ""
 
-                    cartItem.suggestionsAddedInCart.forEachIndexed { index, food ->
-                        suggestions += food.name
+                        cartItem.suggestionsAddedInCart.forEachIndexed { index, item ->
+                            suggestions += item.name
 
-                        if (index != cartItem.suggestionsAddedInCart.size - 1)
-                            suggestions += ", "
+                            if (index != cartItem.suggestionsAddedInCart.size - 1)
+                                suggestions += ", "
+                        }
+
+                        Text(text = suggestions)
                     }
-
-                    Text(text = suggestions)
                 }
             }
         }
@@ -455,12 +469,19 @@ private fun FoodAddedToCart(
     quantity: Int,
     food: Food,
     onDecreaseQuantityClick: () -> Unit,
-    onIncreaseQuantityClick: () -> Unit
+    onIncreaseQuantityClick: () -> Unit,
+    currency: String
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(text = "${quantity}x ${food.name}")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "${quantity}x ${food.name}")
+            Text(text = (quantity * food.price).twoDecimals() + " $currency")
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -509,9 +530,9 @@ private fun FoodAddedToCart(
 fun InspectFoodBottomSheet(
     food: Food,
     currency: String,
-    packFee: Double,
     onAddToCartClick: (CartItem) -> Unit,
-    onEvent: (RestaurantMenuEvents) -> Unit
+    onClose: () -> Unit,
+    cartItem: CartItem? = null
 ) {
     val windowInfo = rememberWindowInfo()
 
@@ -524,8 +545,10 @@ fun InspectFoodBottomSheet(
         mutableStateOf(food.price)
     }
 
-    var isPackingSelected by remember {
-        mutableStateOf(false)
+    LaunchedEffect(key1 = true) {
+        cartItem?.let {
+            suggestionsCart.addAll(cartItem.suggestionsAddedInCart)
+        }
     }
 
     /* Total after suggestion cart size changes */
@@ -554,7 +577,6 @@ fun InspectFoodBottomSheet(
                             food.toCartItem().copy(suggestionsAddedInCart = suggestionsCart)
                         )
                     },
-                    enabled = isPackingSelected,
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text(
@@ -572,9 +594,7 @@ fun InspectFoodBottomSheet(
                 ImageOverflowedByTopBar(
                     food = food,
                     imageHeightDp = windowInfo.screenHeightDp / 3,
-                    onClose = {
-                        onEvent(RestaurantMenuEvents.ToggleBottomSheet)
-                    }
+                    onClose = onClose
                 )
             }
 
@@ -602,68 +622,6 @@ fun InspectFoodBottomSheet(
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.7f),
                     )
                 }
-            }
-
-            /* Add pack */
-            item {
-                if (packFee > 0.0) {
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                    ) {
-                        Box(modifier = Modifier.weight(1.5f)) {
-                            Text(
-                                text = stringResource(id = R.string.add_pack),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .wrapContentWidth(align = Alignment.End),
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.compulsory),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(15.dp))
-                                    .background(MaterialTheme.colorScheme.primary)
-                                    .padding(8.dp)
-                            )
-                        }
-                    }
-
-                    SelectFoodCard(
-                        name = stringResource(id = R.string.pack),
-                        price = packFee,
-                        onClick = {
-                            if (isPackingSelected)
-                                suggestionsCart.remove(
-                                    Food(
-                                        name = context.getString(R.string.pack),
-                                        price = packFee
-                                    )
-                                )
-                            else
-                                suggestionsCart.add(
-                                    Food(
-                                        name = context.getString(R.string.pack),
-                                        price = packFee
-                                    )
-                                )
-
-                            isPackingSelected = !isPackingSelected
-                        },
-                        selected = isPackingSelected,
-                        currency = currency
-                    )
-                }
-
             }
 
             /* Suggestions */
