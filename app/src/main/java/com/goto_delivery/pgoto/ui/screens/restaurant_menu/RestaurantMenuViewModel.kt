@@ -1,6 +1,5 @@
 package com.goto_delivery.pgoto.ui.screens.restaurant_menu
 
-import android.app.Application
 import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -18,13 +17,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.goto_delivery.pgoto.R
 
 @HiltViewModel
 class RestaurantMenuViewModel @Inject constructor(
     private val useCases: RestaurantUseCases,
-    private val savedStateHandle: SavedStateHandle,
-    private val application: Application
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _state = mutableStateOf(RestaurantMenuState())
@@ -79,25 +76,33 @@ class RestaurantMenuViewModel @Inject constructor(
         }
     }
 
+
     private fun addToCart(food: CartItem) {
 
-        val alreadyInCartItem = alreadyInCart(food = food)
+        /* Checks if the item is in cart */
+        val cartItem = alreadyInCart(name = food.name)
 
-        if (alreadyInCartItem != null)
+        /*
+            If food is already in the cart it increasing the quantity and it updates the suggestion list
+            Else adds the food into cart
+         */
+        if (cartItem != null) {
+            val newCart = _state.value.cart.items.map { currentCartItem ->
+                if (currentCartItem == cartItem)
+                    currentCartItem.copy(
+                        quantity = currentCartItem.quantity + 1,
+                        suggestionsAddedInCart = food.suggestionsAddedInCart
+                    )
+                else currentCartItem
+            }
+
             _state.value = _state.value.copy(
                 cart = _state.value.cart.copy(
-                    items = _state.value.cart.items.map { cartItem ->
-                        if (cartItem == alreadyInCartItem)
-                            cartItem.copy(
-                                quantity = cartItem.quantity + 1,
-                                suggestionsAddedInCart = food.suggestionsAddedInCart
-                            )
-                        else cartItem
-                    }
+                    items = newCart,
+                    total = calculateCartTotal(cart = newCart)
                 )
             )
-        else {
-
+        } else {
             val items = _state.value.cart.items + food
 
             _state.value = _state.value.copy(
@@ -107,22 +112,16 @@ class RestaurantMenuViewModel @Inject constructor(
                 )
             )
         }
-
-        val newCartItems = _state.value.cart.items
-
-        _state.value = _state.value.copy(
-            cart = _state.value.cart.copy(
-                items = newCartItems,
-                total = calculateCartTotal(cart = newCartItems)
-            )
-        )
     }
 
-    private fun alreadyInCart(food: CartItem): CartItem? {
+    /* Checks if the item is already in cart
+    *  If it's in cart it returns the cartItem else null
+    *  */
+    fun alreadyInCart(name: String): CartItem? {
         var currentCartItem: CartItem? = null
 
         _state.value.cart.items.forEach { cartItem ->
-            if (cartItem.name == food.name)
+            if (cartItem.name == name)
                 currentCartItem = cartItem
         }
 
@@ -136,12 +135,12 @@ class RestaurantMenuViewModel @Inject constructor(
     }
 
     private fun increaseQuantity(cartItem: CartItem) {
-
         val newCart = _state.value.cart.items.map {
             if (it.name == cartItem.name)
                 it.copy(quantity = it.quantity + 1)
             else it
         }
+
         _state.value = _state.value.copy(
             cart = _state.value.cart.copy(
                 items = newCart,
@@ -153,6 +152,7 @@ class RestaurantMenuViewModel @Inject constructor(
     private fun decreaseQuantity(cartItem: CartItem) {
         val mutableCart = _state.value.cart.items.toMutableList()
 
+        /* If quantity of the item is 1 or below, it is removed from cart */
         mutableCart.forEach {
             if (it.name == cartItem.name) {
                 if (it.quantity <= 1)
@@ -160,6 +160,7 @@ class RestaurantMenuViewModel @Inject constructor(
             }
         }
 
+        /* Decreasing the quantity */
         val newCart = mutableCart.map {
             if (it.name == cartItem.name) {
                 val currentQuantity = it.quantity - 1
@@ -190,6 +191,7 @@ class RestaurantMenuViewModel @Inject constructor(
         return total
     }
 
+    /* Filter food by name */
     private fun filterFood(text: String) {
         val filteredFood = mutableStateListOf<Food>()
 
@@ -204,19 +206,5 @@ class RestaurantMenuViewModel @Inject constructor(
         _state.value = _state.value.copy(
             filteredFoodList = filteredFood
         )
-    }
-
-    fun isInCart(food: Food): CartItem? {
-        var cartItem by mutableStateOf<CartItem?>(null)
-
-        if (_state.value.cart.items.isNotEmpty())
-            _state.value.cart.items.map { currentCartItem ->
-                if (food.name == currentCartItem.name) {
-                    cartItem = currentCartItem
-                }
-            }
-        else cartItem = null
-
-        return cartItem
     }
 }

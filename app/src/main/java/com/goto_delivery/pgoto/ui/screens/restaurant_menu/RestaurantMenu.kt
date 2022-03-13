@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -101,13 +100,7 @@ fun RestaurantMenu(
             sheetContent = {
                 latestClickedFood?.let { food ->
 
-                    var currentCartItem: CartItem? = null
-
-                    state.cart.items.forEach {
-                        if (it.name == food.name) {
-                            currentCartItem = it
-                        }
-                    }
+                    val currentCartItem: CartItem? = viewModel.alreadyInCart(name = food.name)
 
                     InspectFoodBottomSheet(
                         food = food,
@@ -174,9 +167,7 @@ fun RestaurantMenu(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.ArrowBackIosNew,
-                                    contentDescription = stringResource(
-                                        id = R.string.go_back
-                                    )
+                                    contentDescription = stringResource(id = R.string.go_back)
                                 )
                             }
                         }
@@ -203,71 +194,66 @@ fun RestaurantMenu(
                         Spacer(modifier = Modifier.height(15.dp))
 
                         /* Restaurant info */
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth(align = Alignment.CenterHorizontally)
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier.fillMaxWidth(0.9f)
                         ) {
+                            /* Rating */
                             Row(
-                                horizontalArrangement = Arrangement.SpaceAround,
-                                modifier = Modifier.fillMaxWidth(0.9f)
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                /* Rating */
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_star_circle),
-                                        contentDescription = stringResource(id = R.string.rating),
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_star_circle),
+                                    contentDescription = stringResource(id = R.string.rating),
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
 
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
 
-                                    Text(text = state.restaurant.rating.twoDecimals())
-                                }
+                                Text(text = state.restaurant.rating.twoDecimals())
+                            }
 
-                                /* Delivery fee */
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_courier_circle),
-                                        contentDescription = stringResource(id = R.string.delivery_fee),
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                            /* Delivery fee */
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_courier_circle),
+                                    contentDescription = stringResource(id = R.string.delivery_fee),
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
 
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
 
-                                    Text(
-                                        text = if (state.restaurant.deliveryFee == 0.0)
-                                            stringResource(id = R.string.free)
-                                        else "${state.restaurant.deliveryFee.twoDecimals()} ${state.restaurant.currency}"
-                                    )
-                                }
+                                Text(
+                                    text = if (state.restaurant.deliveryFee == 0.0)
+                                        stringResource(id = R.string.free)
+                                    else "${state.restaurant.deliveryFee.twoDecimals()} ${state.restaurant.currency}"
+                                )
+                            }
 
-                                /* Estimated delivery time */
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_time),
-                                        contentDescription = stringResource(id = R.string.estimated_delivery_time),
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                            /* Estimated delivery time */
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_time),
+                                    contentDescription = stringResource(id = R.string.estimated_delivery_time),
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
 
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
 
-                                    Text(text = state.restaurant.estimatedDeliveryTime)
-                                }
+                                Text(text = state.restaurant.estimatedDeliveryTime)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(15.dp))
 
+                        /* Divider */
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -301,7 +287,7 @@ fun RestaurantMenu(
                     }
 
                     items(state.filteredFoodList) { food ->
-                        val currentCartItem = viewModel.isInCart(food)
+                        val currentCartItem = viewModel.alreadyInCart(name = food.name)
 
                         FoodCard(
                             food = food,
@@ -335,7 +321,7 @@ fun RestaurantMenu(
 
                             val food = menuCategory.food[index]
 
-                            val currentCartItem = viewModel.isInCart(food)
+                            val currentCartItem = viewModel.alreadyInCart(name = food.name)
 
                             FoodCard(
                                 food = food,
@@ -369,7 +355,9 @@ private fun FoodCard(
     onEvent: (RestaurantMenuEvents) -> Unit
 ) {
     Column(
-        modifier = Modifier.animateContentSize(tween())
+        modifier = Modifier.animateContentSize(
+            tween(500)
+        )
     ) {
         Row(
             modifier = Modifier
@@ -398,6 +386,7 @@ private fun FoodCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
+                /* Price */
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -409,6 +398,7 @@ private fun FoodCard(
 
                 Spacer(modifier = Modifier.width(5.dp))
 
+                /* Add button */
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -444,6 +434,7 @@ private fun FoodCard(
                         currency = currency
                     )
 
+                    /* Enumerates the suggestions */
                     if (cartItem.suggestionsAddedInCart.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -464,6 +455,7 @@ private fun FoodCard(
     }
 }
 
+/* It shows the food name, price, quantity and increase and decrease button */
 @Composable
 private fun FoodAddedToCart(
     quantity: Int,
@@ -475,6 +467,7 @@ private fun FoodAddedToCart(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
+        /* Name, quantity, price */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -485,6 +478,7 @@ private fun FoodAddedToCart(
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        /* Increase and decrease buttons */
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -501,7 +495,7 @@ private fun FoodAddedToCart(
                     .padding(5.dp)
             ) {
                 Icon(
-                    Icons.Rounded.Remove,
+                    imageVector = Icons.Rounded.Remove,
                     contentDescription = stringResource(id = R.string.decrease_quantity)
                 )
             }
@@ -517,7 +511,7 @@ private fun FoodAddedToCart(
                     .padding(5.dp)
             ) {
                 Icon(
-                    Icons.Rounded.Add,
+                    imageVector = Icons.Rounded.Add,
                     contentDescription = stringResource(id = R.string.increase_quantity)
                 )
             }
@@ -527,7 +521,7 @@ private fun FoodAddedToCart(
 
 @ExperimentalMaterial3Api
 @Composable
-fun InspectFoodBottomSheet(
+private fun InspectFoodBottomSheet(
     food: Food,
     currency: String,
     onAddToCartClick: (CartItem) -> Unit,
@@ -545,6 +539,7 @@ fun InspectFoodBottomSheet(
         mutableStateOf(food.price)
     }
 
+    /* It adds selected suggestions in locally cart */
     LaunchedEffect(key1 = true) {
         cartItem?.let {
             suggestionsCart.addAll(cartItem.suggestionsAddedInCart)
@@ -560,11 +555,9 @@ fun InspectFoodBottomSheet(
         }
     }
 
-    val context = LocalContext.current
-
     Scaffold(
+        /* Add to cart button */
         bottomBar = {
-            /* Add to cart button */
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -632,17 +625,12 @@ fun InspectFoodBottomSheet(
                             .fillMaxWidth()
                             .padding(top = 20.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.suggestions),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        Text(
+                            text = stringResource(id = R.string.suggestions),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
 
                         Spacer(modifier = Modifier.height(5.dp))
 
@@ -682,7 +670,6 @@ private fun SelectFoodCard(
     selected: Boolean,
     currency: String
 ) {
-
     val icon = if (selected) Icons.Rounded.Remove else Icons.Rounded.Add
 
     val backgroundColor by animateColorAsState(
@@ -702,10 +689,12 @@ private fun SelectFoodCard(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row {
+            /* Name */
             Text(text = name)
 
             Spacer(modifier = Modifier.width(8.dp))
 
+            /* Price and currency */
             Text(
                 text = "+ ${price.twoDecimals()} $currency",
                 color = MaterialTheme.colorScheme.primary,
@@ -714,21 +703,19 @@ private fun SelectFoodCard(
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        /* Selected and unselected icon */
         Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(backgroundColor)
+                .clickable { onClick() }
+                .padding(5.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(backgroundColor)
-                    .clickable { onClick() }
-                    .padding(5.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = stringResource(id = if (selected) R.string.selected else R.string.unselected),
-                    tint = iconColor
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = stringResource(id = if (selected) R.string.selected else R.string.unselected),
+                tint = iconColor
+            )
         }
     }
 }
