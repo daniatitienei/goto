@@ -272,9 +272,11 @@ fun RestaurantListScreen(
                             RestaurantCard(
                                 windowHeightDp = windowInfo.screenHeightDp,
                                 restaurant = restaurant,
-                                modifier = Modifier.animateItemPlacement(
-                                    animationSpec = tween(500)
-                                ),
+                                modifier = Modifier
+                                    .animateItemPlacement(
+                                        animationSpec = tween(500)
+                                    )
+                                    .testTag(TestTags.RESTAURANT),
                                 onClick = {
                                     viewModel.onEvent(
                                         RestaurantListEvents.OnNavigate(

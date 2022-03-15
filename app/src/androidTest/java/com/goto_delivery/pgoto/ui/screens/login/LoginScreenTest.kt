@@ -52,17 +52,7 @@ class LoginScreenTest {
                 NavHost(navController = navController, startDestination = Screen.Login.route) {
                     composable(route = Screen.Login.route) {
                         LoginScreen(
-                            onNavigate = { destination ->
-                                navController.navigate(destination.route) {
-                                    launchSingleTop = true
-
-                                    destination.popUpTo?.let { screen ->
-                                        popUpTo(screen.route) {
-                                            inclusive = screen.inclusive
-                                        }
-                                    }
-                                }
-                            }
+                            onNavigate = {}
                         )
                     }
                 }

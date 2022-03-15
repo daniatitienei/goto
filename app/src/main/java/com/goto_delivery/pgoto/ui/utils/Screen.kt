@@ -7,5 +7,5 @@ sealed class Screen(val route: String) {
     object TurnOnLocation : Screen(route = "turn_on_location")
 
     object RestaurantList : Screen(route = "restaurant_list")
-    object RestaurantMenu : Screen(route = "restaurant_menu/?restaurantId={restaurantId}")
+    object RestaurantMenu : Screen(route = "restaurant_menu/restaurant?restaurantId={restaurantId}")
 }

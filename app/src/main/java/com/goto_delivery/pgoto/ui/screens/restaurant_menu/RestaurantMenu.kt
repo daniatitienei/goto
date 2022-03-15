@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import com.goto_delivery.pgoto.R
+import com.goto_delivery.pgoto.data.core.test_tags.TestTags
 import com.goto_delivery.pgoto.domain.model.CartItem
 import com.goto_delivery.pgoto.domain.model.Food
 import com.goto_delivery.pgoto.ui.utils.UiEvent
@@ -355,13 +357,15 @@ private fun FoodCard(
     onEvent: (RestaurantMenuEvents) -> Unit
 ) {
     Column(
-        modifier = Modifier.animateContentSize(
-            tween(500)
-        )
+        modifier = Modifier
+            .animateContentSize(
+                tween(500)
+            )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag(tag = TestTags.FOOD)
                 .clickable { onClick(food) }
                 .padding(vertical = 10.dp, horizontal = 20.dp),
             verticalAlignment = Alignment.Bottom
@@ -465,7 +469,9 @@ private fun FoodAddedToCart(
     currency: String
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(TestTags.FOOD_ADDED_TO_CART)
     ) {
         /* Name, quantity, price */
         Row(
@@ -570,7 +576,9 @@ private fun InspectFoodBottomSheet(
                             food.toCartItem().copy(suggestionsAddedInCart = suggestionsCart)
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(0.8f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .testTag(TestTags.ADD_TO_CART)
                 ) {
                     Text(
                         text = "${stringResource(id = R.string.add_for)} ${cartTotal.twoDecimals()} $currency",
@@ -650,7 +658,7 @@ private fun InspectFoodBottomSheet(
                                         suggestionsCart.add(currentSuggestion)
                                 },
                                 selected = isInCart,
-                                currency = currency
+                                currency = currency,
                             )
 
                             if (index != food.suggestions.size)
@@ -666,9 +674,10 @@ private fun InspectFoodBottomSheet(
 private fun SelectFoodCard(
     name: String,
     price: Double,
-    onClick: () -> Unit,
+    onClick: (Boolean) -> Unit,
     selected: Boolean,
-    currency: String
+    currency: String,
+    modifier: Modifier = Modifier
 ) {
     val icon = if (selected) Icons.Rounded.Remove else Icons.Rounded.Add
 
@@ -683,8 +692,9 @@ private fun SelectFoodCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .clickable { onClick(!selected) }
+            .padding(horizontal = 20.dp, vertical = 10.dp)
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -704,18 +714,23 @@ private fun SelectFoodCard(
         Spacer(modifier = Modifier.height(10.dp))
 
         /* Selected and unselected icon */
-        Box(
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(backgroundColor)
-                .clickable { onClick() }
-                .padding(5.dp)
+        IconToggleButton(
+            checked = selected,
+            onCheckedChange = onClick,
+            modifier = Modifier.testTag(TestTags.FOOD_SUGGESTION)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = stringResource(id = if (selected) R.string.selected else R.string.unselected),
-                tint = iconColor
-            )
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(backgroundColor)
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = stringResource(id = if (selected) R.string.selected else R.string.unselected),
+                    tint = iconColor
+                )
+            }
         }
     }
 }
