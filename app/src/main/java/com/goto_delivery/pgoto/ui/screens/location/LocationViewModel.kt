@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.goto_delivery.pgoto.domain.use_case.user.AccountUseCases
+import com.goto_delivery.pgoto.ui.utils.NavigationGraphs
 import com.goto_delivery.pgoto.ui.utils.Resource
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,6 +28,20 @@ class LocationViewModel @Inject constructor(
         when (event) {
             is LocationEvents.OnNavigate -> {
                 emitEvent(UiEvent.Navigate(route = event.route, popUpTo = event.popUpTo))
+            }
+            is LocationEvents.NavigateToRestaurantList -> {
+                emitEvent(
+                    UiEvent.Navigate(
+                        route = NavigationGraphs.Restaurant,
+                        popUpTo = UiEvent.Navigate.PopUpTo(
+                            route = Screen.TurnOnLocation.route,
+                            inclusive = true
+                        )
+                    )
+                )
+            }
+            is LocationEvents.NavigateToSelectAddressScreen -> {
+                /* TODO */
             }
             is LocationEvents.OnRequestPermission -> {
                 emitEvent(UiEvent.RequestPermissionDialog)

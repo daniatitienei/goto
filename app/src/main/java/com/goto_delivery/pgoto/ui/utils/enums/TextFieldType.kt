@@ -1,4 +1,4 @@
-package com.goto_delivery.pgoto.ui.utils.enum
+package com.goto_delivery.pgoto.ui.utils.enums
 
 enum class TextFieldType {
     EMAIL,

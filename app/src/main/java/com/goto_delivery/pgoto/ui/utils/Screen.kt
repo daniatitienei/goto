@@ -8,4 +8,6 @@ sealed class Screen(val route: String) {
 
     object RestaurantList : Screen(route = "restaurant_list")
     object RestaurantMenu : Screen(route = "restaurant_menu/restaurant?restaurantId={restaurantId}")
+
+    object Cart : Screen(route = "cart/cartItems?items={cartItems}&restaurantId={restaurantId}")
 }

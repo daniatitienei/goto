@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.goto_delivery.pgoto.ui.screens.cart.CartScreen
 import com.goto_delivery.pgoto.ui.screens.location.TurnOnLocationScreen
 import com.goto_delivery.pgoto.ui.screens.login.LoginScreen
 import com.goto_delivery.pgoto.ui.screens.register.RegisterScreen
@@ -29,7 +30,7 @@ import com.goto_delivery.pgoto.ui.utils.Screen
 fun Navigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.RestaurantList.route) {
+    NavHost(navController = navController, startDestination = NavigationGraphs.Restaurant) {
         authenticationGraph(navController = navController)
 
         composable(route = Screen.TurnOnLocation.route) {
@@ -38,9 +39,9 @@ fun Navigation() {
                     navController.navigate(destination.route) {
                         launchSingleTop = true
 
-                        destination.popUpTo?.let { screen ->
-                            popUpTo(screen.route) {
-                                inclusive = screen.inclusive
+                        destination.popUpTo?.let { popUpTo ->
+                            popUpTo(popUpTo.route) {
+                                inclusive = popUpTo.inclusive
                             }
                         }
                     }
@@ -48,6 +49,48 @@ fun Navigation() {
             )
         }
 
+        restaurantGraph(navController = navController)
+    }
+}
+
+@ExperimentalMaterial3Api
+@ExperimentalComposeUiApi
+fun NavGraphBuilder.authenticationGraph(navController: NavController) {
+    navigation(startDestination = Screen.Register.route, route = NavigationGraphs.Authentication) {
+        composable(Screen.Register.route) {
+            RegisterScreen { destination ->
+                navController.navigate(destination.route) {
+                    launchSingleTop = true
+
+                    destination.popUpTo?.let { popUpTo ->
+                        popUpTo(popUpTo.route) {
+                            inclusive = popUpTo.inclusive
+                        }
+                    }
+                }
+            }
+        }
+        composable(Screen.Login.route) {
+            LoginScreen { destination ->
+                navController.navigate(destination.route) {
+                    launchSingleTop = true
+
+                    destination.popUpTo?.let { popUpTo ->
+                        popUpTo(popUpTo.route) {
+                            inclusive = popUpTo.inclusive
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@ExperimentalMaterial3Api
+@ExperimentalFoundationApi
+@ExperimentalMaterialApi
+fun NavGraphBuilder.restaurantGraph(navController: NavController) {
+    navigation(startDestination = Screen.RestaurantList.route, route =  NavigationGraphs.Restaurant) {
         composable(route = Screen.RestaurantList.route) {
             RestaurantListScreen(
                 onNavigate = { destination ->
@@ -62,35 +105,17 @@ fun Navigation() {
             RestaurantMenu(
                 onPopBackStack = {
                     navController.popBackStack()
+                },
+                onNavigate = { destination ->
+                    navController.navigate(destination.route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
-    }
-}
 
-@ExperimentalMaterial3Api
-@ExperimentalComposeUiApi
-fun NavGraphBuilder.authenticationGraph(navController: NavController) {
-    navigation(startDestination = Screen.Register.route, route = NavigationGraphs.Authentication) {
-        composable(Screen.Register.route) {
-            RegisterScreen { destination ->
-                navController.navigate(destination.route) {
-                    launchSingleTop = true
-
-                    destination.popUpTo?.let { screen ->
-                        popUpTo(screen.route) {
-                            inclusive = screen.inclusive
-                        }
-                    }
-                }
-            }
-        }
-        composable(Screen.Login.route) {
-            LoginScreen { destination ->
-                navController.navigate(destination.route) {
-                    launchSingleTop = true
-                }
-            }
+        composable(route = Screen.Cart.route) {
+            CartScreen()
         }
     }
 }

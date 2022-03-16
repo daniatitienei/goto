@@ -56,7 +56,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun RestaurantMenu(
     viewModel: RestaurantMenuViewModel = hiltViewModel(),
-    onPopBackStack: (UiEvent.PopBackStack) -> Unit
+    onPopBackStack: (UiEvent.PopBackStack) -> Unit,
+    onNavigate: (UiEvent.Navigate) -> Unit
 ) {
     val state = viewModel.state.value
 
@@ -75,6 +76,9 @@ fun RestaurantMenu(
             when (event) {
                 is UiEvent.PopBackStack -> {
                     onPopBackStack(event)
+                }
+                is UiEvent.Navigate -> {
+                    onNavigate(event)
                 }
                 else -> Unit
             }
@@ -138,7 +142,9 @@ fun RestaurantMenu(
                                 .padding(bottom = 10.dp),
                         ) {
                             Button(
-                                onClick = { /*TODO*/ },
+                                onClick = {
+                                    viewModel.onEvent(RestaurantMenuEvents.OnCartClick)
+                                },
                                 modifier = Modifier.fillMaxWidth(0.8f)
                             ) {
                                 Text(

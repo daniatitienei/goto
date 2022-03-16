@@ -4,12 +4,15 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.goto_delivery.pgoto.domain.model.Cart
 import com.goto_delivery.pgoto.domain.model.CartItem
 import com.goto_delivery.pgoto.domain.model.Food
 import com.goto_delivery.pgoto.domain.use_case.restaurant.RestaurantUseCases
 import com.goto_delivery.pgoto.ui.utils.Resource
+import com.goto_delivery.pgoto.ui.utils.Screen
 import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.mappers.toCartItem
+import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -21,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RestaurantMenuViewModel @Inject constructor(
     private val useCases: RestaurantUseCases,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val moshi: Moshi
 ) : ViewModel() {
 
     private val _state = mutableStateOf(RestaurantMenuState())
@@ -72,6 +76,19 @@ class RestaurantMenuViewModel @Inject constructor(
             }
             is RestaurantMenuEvents.OnDecreaseQuantity -> {
                 decreaseQuantity(event.food.toCartItem())
+            }
+            is RestaurantMenuEvents.OnCartClick -> {
+
+                val cartJsonAdapter = moshi.adapter(Cart::class.java)
+                val cartAddedInRoute = Screen.Cart.route.replace(
+                    "{cartItems}",
+                    cartJsonAdapter.toJson(_state.value.cart)
+                )
+
+                val finalRoute =
+                    cartAddedInRoute.replace("{restaurantId}", _state.value.restaurant.id.toString())
+
+                emitEvent(UiEvent.Navigate(route = finalRoute))
             }
         }
     }

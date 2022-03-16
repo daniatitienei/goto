@@ -220,15 +220,7 @@ fun TurnOnLocationScreen(
                                             city = city
                                         )
                                     )
-                                    viewModel.onEvent(
-                                        LocationEvents.OnNavigate(
-                                            route = Screen.RestaurantList.route,
-                                            popUpTo = UiEvent.Navigate.PopUpTo(
-                                                route = Screen.TurnOnLocation.route,
-                                                inclusive = true
-                                            )
-                                        )
-                                    )
+                                    viewModel.onEvent(LocationEvents.NavigateToRestaurantList)
                                 }
                             )
                         }

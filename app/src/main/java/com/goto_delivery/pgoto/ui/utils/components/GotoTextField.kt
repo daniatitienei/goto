@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import com.goto_delivery.pgoto.ui.theme.Lime80
-import com.goto_delivery.pgoto.ui.utils.enum.TextFieldType
+import com.goto_delivery.pgoto.ui.utils.enums.TextFieldType
 
 @Composable
 fun GotoTextField(

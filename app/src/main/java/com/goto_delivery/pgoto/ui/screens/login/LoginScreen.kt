@@ -27,7 +27,7 @@ import com.goto_delivery.pgoto.ui.utils.UiEvent
 import com.goto_delivery.pgoto.ui.utils.authentication.google.googleSignInActivityResult
 import com.goto_delivery.pgoto.ui.utils.components.GotoTextField
 import com.goto_delivery.pgoto.ui.utils.components.ThirdPartyAuthenticationMethod
-import com.goto_delivery.pgoto.ui.utils.enum.TextFieldType
+import com.goto_delivery.pgoto.ui.utils.enums.TextFieldType
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
