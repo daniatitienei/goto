@@ -91,7 +91,7 @@ class RestaurantMenuViewModel @Inject constructor(
                 if (currentCartItem == cartItem)
                     currentCartItem.copy(
                         quantity = currentCartItem.quantity + 1,
-                        suggestionsAddedInCart = food.suggestionsAddedInCart
+                        suggestions = food.suggestions
                     )
                 else currentCartItem
             }
@@ -183,7 +183,7 @@ class RestaurantMenuViewModel @Inject constructor(
         cart.forEach { food ->
             total += (food.price * food.quantity)
 
-            food.suggestionsAddedInCart.forEach { suggestion ->
+            food.suggestions.forEach { suggestion ->
                 total += suggestion.price
             }
         }

@@ -439,15 +439,15 @@ private fun FoodCard(
                     )
 
                     /* Enumerates the suggestions */
-                    if (cartItem.suggestionsAddedInCart.isNotEmpty()) {
+                    if (cartItem.suggestions.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         var suggestions = ""
 
-                        cartItem.suggestionsAddedInCart.forEachIndexed { index, item ->
+                        cartItem.suggestions.forEachIndexed { index, item ->
                             suggestions += item.name
 
-                            if (index != cartItem.suggestionsAddedInCart.size - 1)
+                            if (index != cartItem.suggestions.size - 1)
                                 suggestions += ", "
                         }
 
@@ -548,7 +548,7 @@ private fun InspectFoodBottomSheet(
     /* It adds selected suggestions in locally cart */
     LaunchedEffect(key1 = true) {
         cartItem?.let {
-            suggestionsCart.addAll(cartItem.suggestionsAddedInCart)
+            suggestionsCart.addAll(cartItem.suggestions)
         }
     }
 
@@ -573,7 +573,7 @@ private fun InspectFoodBottomSheet(
                 Button(
                     onClick = {
                         onAddToCartClick(
-                            food.toCartItem().copy(suggestionsAddedInCart = suggestionsCart)
+                            food.toCartItem().copy(suggestions = suggestionsCart)
                         )
                     },
                     modifier = Modifier

@@ -62,4 +62,16 @@
     <string name="add_pack">Adauga ambalaj</string>
     <string name="selected">Selectat</string>
     <string name="unselected">Neselectat</string>
+    <string name="cart">Cos</string>
+    <string name="change_address">Schimba adresa</string>
+    <string name="payment_method">Metoda de plata</string>
+    <string name="select">Selecteaza</string>
+    <string name="schedule_delivery">Programeaza livrarea</string>
+    <string name="schedule">Programeaza</string>
+    <string name="total">Total</string>
+    <string name="summary">Rezumat</string>
+    <string name="info">Informatii</string>
+    <string name="order">Comanda</string>
+    <string name="with">Cu</string>
+    <string name="cart_items">Produsele din cart</string>
 </resources>

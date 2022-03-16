@@ -5,5 +5,5 @@ data class CartItem(
     val ingredients: String = "",
     val price: Double = 0.0,
     val quantity: Int = 1,
-    val suggestionsAddedInCart: List<Food> = emptyList(),
+    val suggestions: List<Food> = emptyList(),
 )
